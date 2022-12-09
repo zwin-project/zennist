@@ -1,0 +1,79 @@
+name: meson_test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-with-clang:
+    runs-on: ubuntu-22.04
+
+    env:
+      CC: clang
+      CXX: clang++
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update &&
+          sudo apt-get install \
+            libwayland-dev wayland-protocols libglm-dev libgles-dev \
+            libjpeg-dev meson
+
+      - name: Clone zigen
+        uses: actions/checkout@v2
+        with:
+          repository: zigen-project/zigen
+          path: zigen
+          ref: draft
+      
+      - name: Build zigen
+        working-directory: ./zigen
+        run: |
+          meson build
+          sudo ninja -C build install
+
+      - name: Clone zen-protocols
+        uses: actions/checkout@v2
+        with:
+          repository: zigen-project/zen-protocols
+          path: zen-protocols
+      
+      - name: Build zen-protocols
+        working-directory: ./zen-protocols
+        run: |
+          meson build
+          sudo ninja -C build install
+
+      - name: Checkout zukou
+        uses: actions/checkout@v2
+        with:
+          repository: zigen-project/zukou
+          path: zukou
+
+      - name: Build zukou
+        working-directory: ./zukou
+        run: |
+          meson build
+          sudo ninja -C build install
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: main
+
+      - name: Build
+        run: |
+          meson build
+          ninja -C build
+        working-directory: ./main
+
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: zennist-test-log
+          path: main/build/meson-logs/
