@@ -26,4 +26,7 @@ zukou_dep = dependency('zukou')
 
 public_inc = include_directories('include')
 
+textify = files('tools/textify.sh')[0]
+
+subdir('shaders')
 subdir('src')

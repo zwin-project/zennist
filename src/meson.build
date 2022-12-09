@@ -1,5 +1,9 @@
 _sources = [
+  'floor.cc',
   'main.cc',
+
+  shaders['floor']['vert'],
+  shaders['floor']['frag'],
 ]
 
 _dependencies = [
