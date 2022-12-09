@@ -24,8 +24,6 @@ add_project_arguments(global_args, language: 'cpp')
 glm_dep = dependency('glm')
 zukou_dep = dependency('zukou')
 
-public_inc = include_directories('include')
-
 textify = files('tools/textify.sh')[0]
 
 subdir('shaders')
