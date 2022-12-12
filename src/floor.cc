@@ -120,7 +120,7 @@ Floor::ConstructVertices()
 {
   float mountains[][4] = {
       // {x, z, height, flatness}
-      {200, -200, 80, 250.f},
+      {200, -200, 60, 250.f},
       {-300, -100, 40, 300.f},
   };
 

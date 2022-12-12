@@ -24,8 +24,10 @@ add_project_arguments(global_args, language: 'cpp')
 
 datadir = get_option('datadir')
 
+zukou_req = '0.0.2'
+
 glm_dep = dependency('glm')
-zukou_dep = dependency('zukou')
+zukou_dep = dependency('zukou', version: zukou_req)
 jpeg_dep = dependency('libjpeg')
 
 # texture_files = files(

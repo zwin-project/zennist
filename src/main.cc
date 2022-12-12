@@ -8,7 +8,7 @@
 
 namespace zennist {
 
-class Application final : public zukou::ISpaceDelegate
+class Application final : public zukou::IExpansiveDelegate
 {
   glm::vec4 rgbColor(float r, float g, float b)
   {
@@ -60,7 +60,7 @@ class Application final : public zukou::ISpaceDelegate
 
  private:
   zukou::System system_;
-  zukou::Space space_;
+  zukou::Expansive space_;
 
   Floor floor1_;
   Floor floor2_;
