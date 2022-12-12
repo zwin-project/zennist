@@ -21,8 +21,10 @@ foreach arg : global_args_maybe
 endforeach
 add_project_arguments(global_args, language: 'cpp')
 
+zukou_req = '0.0.2'
+
 glm_dep = dependency('glm')
-zukou_dep = dependency('zukou')
+zukou_dep = dependency('zukou', version: zukou_req)
 
 textify = files('tools/textify.sh')[0]
 
