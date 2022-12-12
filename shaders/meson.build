@@ -1,5 +1,8 @@
 _shaders = {
   'floor': ['frag', 'vert'],
+  'color': ['frag'],
+  'texture': ['frag'],
+  'default': ['vert'],
 }
 
 shaders = {}

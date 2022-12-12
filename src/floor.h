@@ -18,10 +18,10 @@ class Floor
   DISABLE_MOVE_AND_COPY(Floor);
   Floor() = delete;
   Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
-      float length_ = 5.f, uint32_t count_x_ = 100, uint32_t count_z_ = 100);
+      float length_ = 5.f, uint32_t count_x_ = 50, uint32_t count_z_ = 50);
   ~Floor();
 
-  bool Render();
+  bool Render(float radius, glm::mat4 transform, glm::vec4 color);
 
  private:
   bool Init();

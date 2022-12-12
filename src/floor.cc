@@ -5,8 +5,8 @@
 
 #include <cstring>
 
+#include "default.vert.h"
 #include "floor.frag.h"
-#include "floor.vert.h"
 
 namespace zennist {
 
@@ -40,9 +40,15 @@ Floor::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Floor::Render()
+Floor::Render(float radius, glm::mat4 transform, glm::vec4 color)
 {
-  return initialized_ || Init() == true;
+  if (!initialized_ && Init() == false) return true;
+
+  auto local_model = glm::scale(transform, glm::vec3(radius));
+  base_technique_.Uniform(0, "local_model", local_model);
+  base_technique_.Uniform(0, "color", color);
+
+  return true;
 }
 
 bool
@@ -61,7 +67,7 @@ Floor::Init()
   if (!gl_vertex_buffer_.Init()) return false;
   if (!gl_element_array_buffer_.Init()) return false;
   if (!vertex_array_.Init()) return false;
-  if (!vertex_shader_.Init(GL_VERTEX_SHADER, floor_vert_shader_source))
+  if (!vertex_shader_.Init(GL_VERTEX_SHADER, default_vert_shader_source))
     return false;
   if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, floor_frag_shader_source))
     return false;
@@ -101,8 +107,8 @@ Floor::Init()
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  base_technique_.DrawElements(GL_LINES, elements_.size(), GL_UNSIGNED_SHORT, 0,
-      &gl_element_array_buffer_);
+  base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
+      GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
 
   initialized_ = true;
 
@@ -134,7 +140,7 @@ Floor::ConstructVertices()
         y += h * (cosf(M_PI * r / flatness) + 1.f) / 2.f;
       }
 
-      vertices_.emplace_back(x, y, z, 0, 0);
+      vertices_.emplace_back(x, y, z, 0, 0);  // (x1, y, z1), (x2, y, z1), ...
     }
   }
 }
@@ -142,19 +148,36 @@ Floor::ConstructVertices()
 void
 Floor::ConstructElements()
 {
-  // x-axis
-  for (int32_t z = 0; z <= 2 * count_z_; z++) {
-    for (int32_t x = 0; x < 2 * count_x_; x++) {
-      elements_.push_back(x + z * (2 * count_x_ + 1));
-      elements_.push_back((x + 1) + z * (2 * count_x_ + 1));
-    }
-  }
+  // // x-axis
+  // for (int32_t z = 0; z <= 2 * count_z_; z++) {
+  //   for (int32_t x = 0; x < 2 * count_x_; x++) {
+  //     elements_.push_back(x + z * (2 * count_x_ + 1));
+  //     elements_.push_back((x + 1) + z * (2 * count_x_ + 1));
+  //   }
+  // }
 
-  // z-axis
-  for (int32_t x = 0; x <= 2 * count_x_; x++) {
-    for (int32_t z = 0; z < 2 * count_z_; z++) {
-      elements_.push_back(x + z * (2 * count_x_ + 1));
-      elements_.push_back(x + (z + 1) * (2 * count_x_ + 1));
+  // // z-axis
+  // for (int32_t x = 0; x <= 2 * count_x_; x++) {
+  //   for (int32_t z = 0; z < 2 * count_z_; z++) {
+  //     elements_.push_back(x + z * (2 * count_x_ + 1));
+  //     elements_.push_back(x + (z + 1) * (2 * count_x_ + 1));
+  //   }
+  // }
+
+  for (int32_t z = 0; z <= 2 * count_z_ - 1; z++) {
+    for (int32_t x = 0; x <= 2 * count_x_ - 1; x++) {
+      ushort A = x + z * (2 * count_z_ + 1);
+      ushort B = (x + 1) + z * (2 * count_z_ + 1);
+      ushort C = x + (z + 1) * (2 * count_z_ + 1);
+      ushort D = (x + 1) + (z + 1) * (2 * count_z_ + 1);
+
+      elements_.push_back(A);
+      elements_.push_back(B);
+      elements_.push_back(C);
+
+      elements_.push_back(B);
+      elements_.push_back(C);
+      elements_.push_back(D);
     }
   }
 }
