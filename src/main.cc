@@ -6,7 +6,7 @@
 
 namespace zennist {
 
-class Application final : public zukou::ISpaceDelegate
+class Application final : public zukou::IExpansiveDelegate
 {
  public:
   DISABLE_MOVE_AND_COPY(Application);
@@ -29,7 +29,7 @@ class Application final : public zukou::ISpaceDelegate
 
  private:
   zukou::System system_;
-  zukou::Space space_;
+  zukou::Expansive space_;
 
   Floor floor_;
 };
