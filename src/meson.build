@@ -1,5 +1,6 @@
 _sources = [
   'floor.cc',
+  'simple-object.cc',
   'main.cc',
 
   shaders['floor']['vert'],
