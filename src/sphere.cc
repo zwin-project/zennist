@@ -52,8 +52,6 @@ Sphere::Render(float radius, glm::mat4 transform)
   if (wire_) base_technique_.Uniform(0, "color", glm::vec4(1, 0, 0, 1));
   base_technique_.Uniform(0, "color1", rgbColor(241, 231, 219));
   base_technique_.Uniform(0, "color2", rgbColor(139, 163, 164));
-  // base_technique_.Uniform(0, "color1", rgbColor(0, 0, 0));
-  // base_technique_.Uniform(0, "color2", rgbColor(0, 0, 0));
 
   return true;
 }

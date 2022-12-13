@@ -6,7 +6,7 @@
 
 namespace zennist {
 
-class Floor
+class Landscape
 {
   struct Vertex {
     Vertex(float x, float y, float z, float u, float v);
@@ -15,11 +15,11 @@ class Floor
   };
 
  public:
-  DISABLE_MOVE_AND_COPY(Floor);
-  Floor() = delete;
-  Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
+  DISABLE_MOVE_AND_COPY(Landscape);
+  Landscape() = delete;
+  Landscape(zukou::System* system, zukou::VirtualObject* virtual_object,
       float length_ = 5.f, uint32_t count_x_ = 50, uint32_t count_z_ = 50);
-  ~Floor();
+  ~Landscape();
 
   bool Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2);
 
@@ -65,19 +65,19 @@ class Floor
 };
 
 inline size_t
-Floor::vertex_buffer_size()
+Landscape::vertex_buffer_size()
 {
   return sizeof(decltype(vertices_)::value_type) * vertices_.size();
 }
 
 inline size_t
-Floor::element_array_buffer_size()
+Landscape::element_array_buffer_size()
 {
   return sizeof(decltype(elements_)::value_type) * elements_.size();
 }
 
 inline size_t
-Floor::pool_size()
+Landscape::pool_size()
 {
   return vertex_buffer_size() + element_array_buffer_size();
 }

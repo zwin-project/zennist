@@ -1,11 +1,11 @@
 _sources = [
-  'floor.cc',
+  'landscape.cc',
   'sphere.cc',
   'jpeg-texture.cc',
   'main.cc',
 
-  shaders['floor']['vert'],
-  shaders['floor']['frag'],
+  shaders['landscape']['vert'],
+  shaders['landscape']['frag'],
   shaders['color']['frag'],
   shaders['sky']['frag'],
   shaders['texture']['frag'],

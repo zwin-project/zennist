@@ -1,4 +1,4 @@
-#include "floor.h"
+#include "landscape.h"
 
 #include <sys/mman.h>
 #include <unistd.h>
@@ -6,11 +6,11 @@
 #include <cstring>
 
 #include "default.vert.h"
-#include "floor.frag.h"
+#include "landscape.frag.h"
 
 namespace zennist {
 
-Floor::Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
+Landscape::Landscape(zukou::System* system, zukou::VirtualObject* virtual_object,
     float length, uint32_t count_x, uint32_t count_z)
     : virtual_object_(virtual_object),
       length_(length),
@@ -28,19 +28,19 @@ Floor::Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
       base_technique_(system)
 {}
 
-Floor::~Floor()
+Landscape::~Landscape()
 {
   if (fd_ != 0) {
     close(fd_);
   }
 }
 
-Floor::Vertex::Vertex(float x, float y, float z, float u, float v)
+Landscape::Vertex::Vertex(float x, float y, float z, float u, float v)
     : x(x), y(y), z(z), u(u), v(v)
 {}
 
 bool
-Floor::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2)
+Landscape::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2)
 {
   if (!initialized_ && Init() == false) return true;
 
@@ -53,7 +53,7 @@ Floor::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 col
 }
 
 bool
-Floor::Init()
+Landscape::Init()
 {
   ConstructVertices();
   ConstructElements();
@@ -70,7 +70,7 @@ Floor::Init()
   if (!vertex_array_.Init()) return false;
   if (!vertex_shader_.Init(GL_VERTEX_SHADER, default_vert_shader_source))
     return false;
-  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, floor_frag_shader_source))
+  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, landscape_frag_shader_source))
     return false;
   if (!program_.Init()) return false;
   if (!sampler_.Init()) return false;
@@ -117,7 +117,7 @@ Floor::Init()
 }
 
 void
-Floor::ConstructVertices()
+Landscape::ConstructVertices()
 {
   float mountains[][4] = {
       // {x, z, height, flatness}
@@ -149,7 +149,7 @@ Floor::ConstructVertices()
 }
 
 void
-Floor::ConstructElements()
+Landscape::ConstructElements()
 {
   for (int32_t z = 0; z <= 2 * count_z_ - 1; z++) {
     for (int32_t x = 0; x <= 2 * count_x_ - 1; x++) {

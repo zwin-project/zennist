@@ -11,5 +11,5 @@ out vec4 out_color;
 void
 main()
 {
-  out_color = mix(color1, color2, uv.y);
+  out_color = mix(color1, color2, uv.y * 2.0);
 }
