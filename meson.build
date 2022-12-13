@@ -30,19 +30,15 @@ glm_dep = dependency('glm')
 zukou_dep = dependency('zukou', version: zukou_req)
 jpeg_dep = dependency('libjpeg')
 
-# texture_files = files(
-#   'assets/bg_teal.jpg',
-# )
-# texture_install_dir = join_paths(datadir, 'textures', 'zennist')
-# install_data(texture_files, install_dir: texture_install_dir)
-# texture_bg_teal = join_paths(get_option('prefix'), texture_install_dir, 'bg_teal.jpg')
-# cdata.set_quoted('TEXTURE_BG_TEAL', texture_bg_teal)
-# configure_file(
-#   output: 'constants.h',
-#   configuration: cdata
-# )
-
 textify = files('tools/textify.sh')[0]
+
+install_subdir('assets', install_dir: get_option('datadir') / meson.project_name())
+cdata.set_quoted('ZENNIST_ASSET_DIR', get_option('prefix') / get_option('datadir') / meson.project_name() / 'assets')
+
+configure_file(
+  output: 'constants.h',
+  configuration: cdata,
+)
 
 subdir('shaders')
 subdir('src')

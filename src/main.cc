@@ -5,6 +5,7 @@
 #include "landscape.h"
 #include "jpeg-texture.h"
 #include "sphere.h"
+#include "floor.h"
 
 namespace zennist {
 
@@ -22,6 +23,7 @@ class Application final : public zukou::IExpansiveDelegate
         landscape1_(&system_, &space_),
         landscape2_(&system_, &space_),
         landscape3_(&system_, &space_),
+        floor_(&system_, &space_),
         bg_(&system_, &space_, 8, false)
         {};
 
@@ -46,6 +48,7 @@ class Application final : public zukou::IExpansiveDelegate
       return false;
 
     if (!bg_.Render(990, glm::mat4(1))) return false;
+    if (!floor_.Render()) return false;
 
     space_.Commit();
 
@@ -63,6 +66,7 @@ class Application final : public zukou::IExpansiveDelegate
   Landscape landscape1_;
   Landscape landscape2_;
   Landscape landscape3_;
+  Floor floor_;
   Sphere bg_;
 };
 

@@ -3,6 +3,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+namespace zennist {
+
 JpegTexture::JpegTexture(zukou::System *system)
     : zukou::GlTexture(system), pool_(system)
 {}
@@ -99,3 +101,5 @@ err_destroy_decompress:
 err:
   return result;
 }
+
+}  // namespace zennist

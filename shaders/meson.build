@@ -4,6 +4,7 @@ _shaders = {
   'texture': ['frag'],
   'default': ['vert'],
   'sky': ['frag'],
+  'floor': ['frag', 'vert']
 }
 
 shaders = {}

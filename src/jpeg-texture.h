@@ -1,11 +1,12 @@
 #pragma once
 
-#include <zukou.h>
-
 #include <bits/types/FILE.h>
 #include <stdio.h>
+#include <zukou.h>
 //
 #include <jpeglib.h>
+
+namespace zennist {
 
 class JpegTexture final : public zukou::GlTexture
 {
@@ -25,3 +26,5 @@ class JpegTexture final : public zukou::GlTexture
   zukou::ShmPool pool_;
   zukou::Buffer texture_buffer_;
 };
+
+}  // namespace zennist

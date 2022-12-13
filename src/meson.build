@@ -1,6 +1,7 @@
 _sources = [
   'landscape.cc',
   'sphere.cc',
+  'floor.cc',
   'jpeg-texture.cc',
   'main.cc',
 
@@ -21,5 +22,6 @@ executable(
   'zennist',
   _sources,
   install: true,
+  cpp_args: ['-include', 'constants.h'],
   dependencies: _dependencies,
 )
