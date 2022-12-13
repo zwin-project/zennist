@@ -21,7 +21,15 @@ class Landscape
       float length_ = 5.f, uint32_t count_x_ = 50, uint32_t count_z_ = 50);
   ~Landscape();
 
-  bool Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2);
+  bool Render(
+    float radius,
+    glm::mat4 transform,
+    glm::vec4 color1,
+    glm::vec4 color2,
+    glm::vec4 colorstripe,
+    float freq,
+    float threshold
+  );
 
  private:
   bool Init();

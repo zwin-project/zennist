@@ -31,21 +31,33 @@ class Application final : public zukou::IExpansiveDelegate
   {
     if (!system_.Init()) return false;
     if (!space_.Init()) return false;
-    if (!landscape1_.Render(.3f, glm::mat4(1), rgbColor(40, 57, 64), rgbColor(37, 50, 66))) return false;
-    if (!landscape2_.Render(.8f,
-            glm::translate(
-                glm::rotate(glm::mat4(1), (float)M_PI / 4, glm::vec3(0, 1, 0)),
-                glm::vec3(0, -.1f, 0)),
-            rgbColor(76, 115, 131),
-            rgbColor(95, 113, 122))
-    ) return false;
-    if (!landscape3_.Render(1.5f,
-            glm::translate(
-                glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
-                glm::vec3(0, -.1f, 0)),
-            rgbColor(148, 167, 156),
-            rgbColor(123, 146, 147)))
-      return false;
+    if (!landscape1_.Render(
+      .3f,
+      glm::mat4(1),
+      rgbColor(40, 57, 64),
+      rgbColor(37, 50, 66),
+      rgbColor(255, 255, 255),
+      50.0,
+      .95f
+    )) return false;
+    if (!landscape2_.Render(
+      .8f,
+      glm::translate(glm::rotate(glm::mat4(1), (float)M_PI / 4, glm::vec3(0, 1, 0)), glm::vec3(0, -.1f, 0)),
+      rgbColor(76, 115, 131),
+      rgbColor(95, 113, 122),
+      rgbColor(255, 255, 255),
+      70.0,
+      .95f
+    )) return false;
+    if (!landscape3_.Render(
+      1.5f,
+      glm::translate(glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)), glm::vec3(0, -.1f, 0)),
+      rgbColor(148, 167, 156),
+      rgbColor(123, 146, 147),
+      rgbColor(255, 255, 255),
+      120.0,
+      .95f
+    )) return false;
 
     if (!bg_.Render(990, glm::mat4(1))) return false;
     if (!floor_.Render()) return false;

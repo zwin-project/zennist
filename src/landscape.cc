@@ -40,14 +40,16 @@ Landscape::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Landscape::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2)
+Landscape::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2, glm::vec4 colorstripe, float freq, float threshold)
 {
   if (!initialized_ && Init() == false) return true;
 
   auto local_model = glm::scale(transform, glm::vec3(radius));
   base_technique_.Uniform(0, "local_model", local_model);
-  base_technique_.Uniform(0, "color1", color1);
-  base_technique_.Uniform(0, "color2", color2);
+  base_technique_.Uniform(0, "color_base1", color1);
+  base_technique_.Uniform(0, "color_base2", color2);
+  base_technique_.Uniform(0, "color_stripe", colorstripe);
+  base_technique_.Uniform(0, "in_vec", glm::vec2(freq, threshold));
 
   return true;
 }
