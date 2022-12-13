@@ -7,6 +7,7 @@ _sources = [
   shaders['floor']['vert'],
   shaders['floor']['frag'],
   shaders['color']['frag'],
+  shaders['sky']['frag'],
   shaders['texture']['frag'],
   shaders['default']['vert'],
 ]

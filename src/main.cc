@@ -28,18 +28,20 @@ class Application final : public zukou::IExpansiveDelegate
   {
     if (!system_.Init()) return false;
     if (!space_.Init()) return false;
-    if (!floor1_.Render(.3f, glm::mat4(1), rgbColor(49, 69, 95))) return false;
+    if (!floor1_.Render(.3f, glm::mat4(1), rgbColor(70, 95, 112), rgbColor(49, 69, 95))) return false;
     if (!floor2_.Render(.8f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 4, glm::vec3(0, 1, 0)),
                 glm::vec3(0, -.1f, 0)),
-            rgbColor(87, 132, 150)))
-      return false;
+            rgbColor(76, 115, 131),
+            rgbColor(95, 113, 122))
+    ) return false;
     if (!floor3_.Render(1.5f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
                 glm::vec3(0, -.1f, 0)),
-            rgbColor(147, 166, 156)))
+            rgbColor(148, 167, 156),
+            rgbColor(123, 146, 147)))
       return false;
 
     // auto jpeg_texture = std::make_unique<JpegTexture>(&system_);

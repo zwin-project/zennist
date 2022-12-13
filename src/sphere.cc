@@ -8,7 +8,8 @@
 
 #include "color.frag.h"
 #include "default.vert.h"
-#include "texture.frag.h"
+// #include "texture.frag.h"
+#include "sky.frag.h"
 
 Sphere::Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,
     int32_t resolution, bool wire)
@@ -49,6 +50,10 @@ Sphere::Render(float radius, glm::mat4 transform)
   base_technique_.Uniform(0, "local_model", local_model);
 
   if (wire_) base_technique_.Uniform(0, "color", glm::vec4(1, 0, 0, 1));
+  base_technique_.Uniform(0, "color1", rgbColor(241, 231, 219));
+  base_technique_.Uniform(0, "color2", rgbColor(139, 163, 164));
+  // base_technique_.Uniform(0, "color1", rgbColor(0, 0, 0));
+  // base_technique_.Uniform(0, "color2", rgbColor(0, 0, 0));
 
   return true;
 }
@@ -66,7 +71,7 @@ Sphere::Init()
   ConstructElements();
 
   const char* frag_shader_source =
-      wire_ ? color_frag_shader_source : texture_frag_shader_source;
+      wire_ ? color_frag_shader_source : sky_frag_shader_source;
 
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());
   if (!pool_.Init(fd_, pool_size())) return false;

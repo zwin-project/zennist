@@ -21,7 +21,7 @@ class Floor
       float length_ = 5.f, uint32_t count_x_ = 50, uint32_t count_z_ = 50);
   ~Floor();
 
-  bool Render(float radius, glm::mat4 transform, glm::vec4 color);
+  bool Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2);
 
  private:
   bool Init();

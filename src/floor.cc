@@ -40,13 +40,14 @@ Floor::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Floor::Render(float radius, glm::mat4 transform, glm::vec4 color)
+Floor::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2)
 {
   if (!initialized_ && Init() == false) return true;
 
   auto local_model = glm::scale(transform, glm::vec3(radius));
   base_technique_.Uniform(0, "local_model", local_model);
-  base_technique_.Uniform(0, "color", color);
+  base_technique_.Uniform(0, "color1", color1);
+  base_technique_.Uniform(0, "color2", color2);
 
   return true;
 }
@@ -128,6 +129,8 @@ Floor::ConstructVertices()
     for (int32_t j = -count_x_; j <= count_x_; j++) {
       float x = (float)j * length_;
       float z = (float)i * length_;
+      float u = (float)j / count_x_ / 2 + .5f;
+      float v = (float)i / count_z_ / 2 + .5f;
       float y = 0;
 
       for (uint32_t k = 0; k < sizeof(mountains) / sizeof(mountains[0]); k++) {
@@ -140,7 +143,7 @@ Floor::ConstructVertices()
         y += h * (cosf(M_PI * r / flatness) + 1.f) / 2.f;
       }
 
-      vertices_.emplace_back(x, y, z, 0, 0);  // (x1, y, z1), (x2, y, z1), ...
+      vertices_.emplace_back(x, y, z, u, v);  // (x1, y, z1), (x2, y, z1), ...
     }
   }
 }
@@ -148,22 +151,6 @@ Floor::ConstructVertices()
 void
 Floor::ConstructElements()
 {
-  // // x-axis
-  // for (int32_t z = 0; z <= 2 * count_z_; z++) {
-  //   for (int32_t x = 0; x < 2 * count_x_; x++) {
-  //     elements_.push_back(x + z * (2 * count_x_ + 1));
-  //     elements_.push_back((x + 1) + z * (2 * count_x_ + 1));
-  //   }
-  // }
-
-  // // z-axis
-  // for (int32_t x = 0; x <= 2 * count_x_; x++) {
-  //   for (int32_t z = 0; z < 2 * count_z_; z++) {
-  //     elements_.push_back(x + z * (2 * count_x_ + 1));
-  //     elements_.push_back(x + (z + 1) * (2 * count_x_ + 1));
-  //   }
-  // }
-
   for (int32_t z = 0; z <= 2 * count_z_ - 1; z++) {
     for (int32_t x = 0; x <= 2 * count_x_ - 1; x++) {
       ushort A = x + z * (2 * count_z_ + 1);

@@ -3,6 +3,7 @@ _shaders = {
   'color': ['frag'],
   'texture': ['frag'],
   'default': ['vert'],
+  'sky': ['frag'],
 }
 
 shaders = {}

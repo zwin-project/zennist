@@ -85,6 +85,10 @@ class Sphere
   void Bind(std::unique_ptr<zukou::GlTexture> texture);
 
   bool Render(float radius, glm::mat4 transform);
+  glm::vec4 rgbColor(float r, float g, float b)
+  {
+    return glm::vec4(r / 255, g / 255, b / 255, 1);
+  }
 
  private:
   bool Init();
@@ -143,3 +147,4 @@ Sphere::pool_size()
 {
   return vertex_buffer_size() + element_array_buffer_size();
 }
+
