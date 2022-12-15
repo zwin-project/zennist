@@ -49,7 +49,8 @@ Landscape::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4
   base_technique_.Uniform(0, "color_base1", color1);
   base_technique_.Uniform(0, "color_base2", color2);
   base_technique_.Uniform(0, "color_stripe", colorstripe);
-  base_technique_.Uniform(0, "in_vec", glm::vec2(freq, threshold));
+  base_technique_.Uniform(0, "freq", glm::vec<1, float>(freq));
+  base_technique_.Uniform(0, "threshold", glm::vec<1, float>(threshold));
 
   return true;
 }
