@@ -15,7 +15,7 @@ out vec4 out_color;
 void
 main()
 {
-  vec4 base_color=mix(color_base1,color_base2,uv.x);
-  float is_stripe=step(threshold,sin(uv.x*M_PI*2.*freq));
-  out_color=mix(base_color,color_stripe,is_stripe);
+  vec4 base_color = mix(color_base1, color_base2, uv.x);
+  float is_stripe = step(threshold, sin(uv.x * M_PI * 2. * freq));
+  out_color = mix(base_color, color_stripe, is_stripe);
 }
