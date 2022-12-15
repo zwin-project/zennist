@@ -11,6 +11,8 @@ _sources = [
   shaders['sky']['frag'],
   shaders['texture']['frag'],
   shaders['default']['vert'],
+  shaders['floor']['vert'],
+  shaders['floor']['frag'],
 ]
 
 _dependencies = [
