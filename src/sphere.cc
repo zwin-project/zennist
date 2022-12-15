@@ -8,7 +8,6 @@
 
 #include "color.frag.h"
 #include "default.vert.h"
-// #include "texture.frag.h"
 #include "sky.frag.h"
 
 Sphere::Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,

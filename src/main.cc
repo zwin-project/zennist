@@ -9,13 +9,14 @@
 
 namespace zennist {
 
+glm::vec4
+RgbColor(float r, float g, float b)
+{
+  return glm::vec4(r / 255, g / 255, b / 255, 1);
+}
+
 class Application final : public zukou::IExpansiveDelegate
 {
-  glm::vec4 rgbColor(float r, float g, float b)
-  {
-    return glm::vec4(r / 255, g / 255, b / 255, 1);
-  }
-
  public:
   DISABLE_MOVE_AND_COPY(Application);
   Application()
@@ -34,27 +35,27 @@ class Application final : public zukou::IExpansiveDelegate
     if (!landscape1_.Render(
       .3f,
       glm::mat4(1),
-      rgbColor(40, 57, 64),
-      rgbColor(37, 50, 66),
-      rgbColor(255, 255, 255),
+      RgbColor(40, 57, 64),
+      RgbColor(37, 50, 66),
+      RgbColor(255, 255, 255),
       50.0,
       .95f
     )) return false;
     if (!landscape2_.Render(
       .8f,
       glm::translate(glm::rotate(glm::mat4(1), (float)M_PI / 4, glm::vec3(0, 1, 0)), glm::vec3(0, -.1f, 0)),
-      rgbColor(76, 115, 131),
-      rgbColor(95, 113, 122),
-      rgbColor(255, 255, 255),
+      RgbColor(76, 115, 131),
+      RgbColor(95, 113, 122),
+      RgbColor(255, 255, 255),
       70.0,
       .95f
     )) return false;
     if (!landscape3_.Render(
       1.5f,
       glm::translate(glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)), glm::vec3(0, -.1f, 0)),
-      rgbColor(148, 167, 156),
-      rgbColor(123, 146, 147),
-      rgbColor(255, 255, 255),
+      RgbColor(148, 167, 156),
+      RgbColor(123, 146, 147),
+      RgbColor(255, 255, 255),
       120.0,
       .95f
     )) return false;
@@ -83,6 +84,8 @@ class Application final : public zukou::IExpansiveDelegate
 };
 
 }  // namespace zennist
+
+
 
 int
 main()

@@ -145,7 +145,7 @@ Landscape::ConstructVertices()
         y += h * (cosf(M_PI * r / flatness) + 1.f) / 2.f;
       }
 
-      vertices_.emplace_back(x, y, z, u, v);  // (x1, y, z1), (x2, y, z1), ...
+      vertices_.emplace_back(x, y, z, u, v); 
     }
   }
 }
