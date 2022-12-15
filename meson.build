@@ -22,6 +22,8 @@ foreach arg : global_args_maybe
 endforeach
 add_project_arguments(global_args, language: 'cpp')
 
+datadir = get_option('datadir')
+
 zukou_req = '0.0.2'
 
 glm_dep = dependency('glm')

@@ -1,10 +1,15 @@
 _shaders = {
-  'floor': ['frag', 'vert'],
+  'landscape': ['frag', 'vert'],
+  'color': ['frag'],
+  'texture': ['frag'],
+  'default': ['vert'],
+  'sky': ['frag'],
+  'floor': ['frag', 'vert']
 }
 
 shaders = {}
 # shaders[name][type]
-# ex) shaders['floor']['vert']
+# ex) shaders['landscape']['vert']
 
 foreach name, types : _shaders
   info = {}
