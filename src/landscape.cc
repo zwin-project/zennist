@@ -10,8 +10,9 @@
 
 namespace zennist {
 
-Landscape::Landscape(zukou::System* system, zukou::VirtualObject* virtual_object,
-    float length, uint32_t count_x, uint32_t count_z)
+Landscape::Landscape(zukou::System* system,
+    zukou::VirtualObject* virtual_object, float length, uint32_t count_x,
+    uint32_t count_z)
     : virtual_object_(virtual_object),
       length_(length),
       count_x_(count_x),
@@ -40,7 +41,8 @@ Landscape::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Landscape::Render(float radius, glm::mat4 transform, glm::vec4 color1, glm::vec4 color2, glm::vec4 colorstripe, float freq, float threshold)
+Landscape::Render(float radius, glm::mat4 transform, glm::vec4 color1,
+    glm::vec4 color2, glm::vec4 colorstripe, float freq, float threshold)
 {
   if (!initialized_ && Init() == false) return true;
 
@@ -146,7 +148,7 @@ Landscape::ConstructVertices()
         y += h * (cosf(M_PI * r / flatness) + 1.f) / 2.f;
       }
 
-      vertices_.emplace_back(x, y, z, u, v); 
+      vertices_.emplace_back(x, y, z, u, v);
     }
   }
 }

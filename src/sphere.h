@@ -147,4 +147,3 @@ Sphere::pool_size()
 {
   return vertex_buffer_size() + element_array_buffer_size();
 }
-
