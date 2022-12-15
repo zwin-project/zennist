@@ -8,14 +8,19 @@
 #include "floor.frag.h"
 #include "floor.vert.h"
 
+namespace {
+
+constexpr char kFloorTexturePath[] =
+    ZENNIST_ASSET_DIR "/dark+chevron+parquet-512x512.jpeg";
+
+}  // namespace
+
 namespace zennist {
 
-Floor::Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
-    float length, uint32_t count_x, uint32_t count_z)
+Floor::Floor(
+    zukou::System* system, zukou::VirtualObject* virtual_object, float radius)
     : virtual_object_(virtual_object),
-      length_(length),
-      count_x_(count_x),
-      count_z_(count_z),
+      radius_(radius),
       pool_(system),
       gl_vertex_buffer_(system),
       gl_element_array_buffer_(system),
@@ -24,9 +29,12 @@ Floor::Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
       fragment_shader_(system),
       program_(system),
       sampler_(system),
+      texture_(system),
       rendering_unit_(system),
       base_technique_(system)
-{}
+{
+  ConstructVertices();
+}
 
 Floor::~Floor()
 {
@@ -48,44 +56,34 @@ Floor::Render()
 bool
 Floor::Init()
 {
-  ConstructVertices();
-  ConstructElements();
-
-  fd_ = zukou::Util::CreateAnonymousFile(pool_size());
-  if (!pool_.Init(fd_, pool_size())) return false;
+  fd_ = zukou::Util::CreateAnonymousFile(vertex_buffer_size());
+  if (!pool_.Init(fd_, vertex_buffer_size())) return false;
   if (!vertex_buffer_.Init(&pool_, 0, vertex_buffer_size())) return false;
-  if (!element_array_buffer_.Init(
-          &pool_, vertex_buffer_size(), element_array_buffer_size()))
-    return false;
 
   if (!gl_vertex_buffer_.Init()) return false;
-  if (!gl_element_array_buffer_.Init()) return false;
   if (!vertex_array_.Init()) return false;
   if (!vertex_shader_.Init(GL_VERTEX_SHADER, floor_vert_shader_source))
     return false;
   if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, floor_frag_shader_source))
     return false;
   if (!program_.Init()) return false;
+
+  if (!texture_.Init() || !texture_.Load(kFloorTexturePath)) return false;
   if (!sampler_.Init()) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
   if (!base_technique_.Init(&rendering_unit_)) return false;
 
   {
-    auto vertex_buffer_data = static_cast<char*>(
-        mmap(nullptr, pool_size(), PROT_WRITE, MAP_SHARED, fd_, 0));
-    auto element_array_buffer_data = vertex_buffer_data + vertex_buffer_size();
+    auto vertex_buffer_data =
+        mmap(nullptr, vertex_buffer_size(), PROT_WRITE, MAP_SHARED, fd_, 0);
 
     std::memcpy(vertex_buffer_data, vertices_.data(), vertex_buffer_size());
-    std::memcpy(element_array_buffer_data, elements_.data(),
-        element_array_buffer_size());
 
-    munmap(vertex_buffer_data, pool_size());
+    munmap(vertex_buffer_data, vertex_buffer_size());
   }
 
   gl_vertex_buffer_.Data(GL_ARRAY_BUFFER, &vertex_buffer_, GL_STATIC_DRAW);
-  gl_element_array_buffer_.Data(
-      GL_ELEMENT_ARRAY_BUFFER, &element_array_buffer_, GL_STATIC_DRAW);
 
   program_.AttachShader(&vertex_shader_);
   program_.AttachShader(&fragment_shader_);
@@ -101,8 +99,11 @@ Floor::Init()
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  base_technique_.DrawElements(GL_LINES, elements_.size(), GL_UNSIGNED_SHORT, 0,
-      &gl_element_array_buffer_);
+  sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  base_technique_.Bind(0, "floor_texture", &texture_, GL_TEXTURE_2D, &sampler_);
+
+  base_technique_.DrawArrays(GL_TRIANGLE_FAN, 0, vertices_.size());
 
   initialized_ = true;
 
@@ -112,50 +113,14 @@ Floor::Init()
 void
 Floor::ConstructVertices()
 {
-  float mountains[][4] = {
-      // {x, z, height, flatness}
-      {200, -200, 60, 250.f},
-      {-300, -100, 40, 300.f},
-  };
-
-  for (int32_t i = -count_z_; i <= count_z_; i++) {
-    for (int32_t j = -count_x_; j <= count_x_; j++) {
-      float x = (float)j * length_;
-      float z = (float)i * length_;
-      float y = 0;
-
-      for (uint32_t k = 0; k < sizeof(mountains) / sizeof(mountains[0]); k++) {
-        float x0 = mountains[k][0];
-        float z0 = mountains[k][1];
-        float h = mountains[k][2];
-        float flatness = mountains[k][3];
-        float r = sqrtf(powf(x - x0, 2) + powf(z - z0, 2));
-        if (r > flatness) continue;
-        y += h * (cosf(M_PI * r / flatness) + 1.f) / 2.f;
-      }
-
-      vertices_.emplace_back(x, y, z, 0, 0);
-    }
-  }
-}
-
-void
-Floor::ConstructElements()
-{
-  // x-axis
-  for (int32_t z = 0; z <= 2 * count_z_; z++) {
-    for (int32_t x = 0; x < 2 * count_x_; x++) {
-      elements_.push_back(x + z * (2 * count_x_ + 1));
-      elements_.push_back((x + 1) + z * (2 * count_x_ + 1));
-    }
-  }
-
-  // z-axis
-  for (int32_t x = 0; x <= 2 * count_x_; x++) {
-    for (int32_t z = 0; z < 2 * count_z_; z++) {
-      elements_.push_back(x + z * (2 * count_x_ + 1));
-      elements_.push_back(x + (z + 1) * (2 * count_x_ + 1));
-    }
+  const static int resolution = 32;
+  vertices_.emplace_back(0, 0, 0, 0, 0);
+  for (float i = 0; i <= resolution; i++) {
+    float theta = M_PI * 2.f * i / float(resolution);
+    float x = radius_ * cosf(theta);
+    float y = 0.2f;
+    float z = radius_ * sinf(theta);
+    vertices_.emplace_back(x, y, z, x, z);
   }
 }
 

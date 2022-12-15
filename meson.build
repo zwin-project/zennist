@@ -7,6 +7,7 @@ project(
 )
 
 cxx = meson.get_compiler('cpp')
+cdata = configuration_data()
 
 global_args = []
 global_args_maybe = [
@@ -25,8 +26,17 @@ zukou_req = '0.0.2'
 
 glm_dep = dependency('glm')
 zukou_dep = dependency('zukou', version: zukou_req)
+jpeg_dep = dependency('libjpeg')
 
 textify = files('tools/textify.sh')[0]
+
+install_subdir('assets', install_dir: get_option('datadir') / meson.project_name())
+cdata.set_quoted('ZENNIST_ASSET_DIR', get_option('prefix') / get_option('datadir') / meson.project_name() / 'assets')
+
+configure_file(
+  output: 'constants.h',
+  configuration: cdata,
+)
 
 subdir('shaders')
 subdir('src')

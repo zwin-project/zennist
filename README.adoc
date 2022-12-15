@@ -1,1 +1,11 @@
 = ZENNIST
+
+== Build & Install
+
+TBD
+
+== Asset License
+
+* link:./assets/dark+chevron+parquet-512x512.jpeg[Dark chevron parquet]
+** By https://www.the3rdsequence.com/texturedb/texture/91/dark+chevron+parquet/[the3rdSequence]
+** Licensed under a https://creativecommons.org/licenses/by/4.0/[Creative Commons Attribution 4.0 International License.]
