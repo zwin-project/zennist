@@ -128,6 +128,8 @@ Landscape::ConstructVertices()
       // {x, z, height, flatness}
       {200, -200, 60, 250.f},
       {-300, -100, 40, 300.f},
+      {-100, 300, 70, 150.f},
+      {300, 0, 20, 300.f},
   };
 
   for (int32_t i = -count_z_; i <= count_z_; i++) {
