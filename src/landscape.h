@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include "jpeg-texture.h"
+
 namespace zennist {
 
 class Landscape
@@ -21,13 +23,13 @@ class Landscape
       float length_ = 5.f, uint32_t count_x_ = 50, uint32_t count_z_ = 50);
   ~Landscape();
 
-  bool Render(float radius, glm::mat4 transform, glm::vec4 color1,
-      glm::vec4 color2, glm::vec4 colorstripe, float freq, float threshold);
+  bool Render(
+      float radius, glm::mat4 transform, const char* texturePath, float repeat);
 
  private:
-  bool Init();
+  bool Init(const char* texturePath, float repeat);
 
-  void ConstructVertices();
+  void ConstructVertices(float repeat);
   void ConstructElements();
 
   bool initialized_ = false;
@@ -49,8 +51,8 @@ class Landscape
   zukou::GlShader vertex_shader_;
   zukou::GlShader fragment_shader_;
   zukou::GlProgram program_;
-  std::unique_ptr<zukou::GlTexture> texture_;
   zukou::GlSampler sampler_;
+  JpegTexture texture_;
 
   zukou::RenderingUnit rendering_unit_;
   zukou::GlBaseTechnique base_technique_;

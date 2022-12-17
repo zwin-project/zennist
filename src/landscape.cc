@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "default.vert.h"
-#include "landscape.frag.h"
+#include "texture.frag.h"
 
 namespace zennist {
 
@@ -25,6 +25,7 @@ Landscape::Landscape(zukou::System* system,
       fragment_shader_(system),
       program_(system),
       sampler_(system),
+      texture_(system),
       rendering_unit_(system),
       base_technique_(system)
 {}
@@ -41,26 +42,21 @@ Landscape::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Landscape::Render(float radius, glm::mat4 transform, glm::vec4 color1,
-    glm::vec4 color2, glm::vec4 colorstripe, float freq, float threshold)
+Landscape::Render(
+    float radius, glm::mat4 transform, const char* texturePath, float repeat)
 {
-  if (!initialized_ && Init() == false) return true;
+  if (!initialized_ && Init(texturePath, repeat) == false) return true;
 
   auto local_model = glm::scale(transform, glm::vec3(radius));
   base_technique_.Uniform(0, "local_model", local_model);
-  base_technique_.Uniform(0, "color_base1", color1);
-  base_technique_.Uniform(0, "color_base2", color2);
-  base_technique_.Uniform(0, "color_stripe", colorstripe);
-  base_technique_.Uniform(0, "freq", glm::vec<1, float>(freq));
-  base_technique_.Uniform(0, "threshold", glm::vec<1, float>(threshold));
 
   return true;
 }
 
 bool
-Landscape::Init()
+Landscape::Init(const char* texturePath, float repeat)
 {
-  ConstructVertices();
+  ConstructVertices(repeat);
   ConstructElements();
 
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());
@@ -75,9 +71,11 @@ Landscape::Init()
   if (!vertex_array_.Init()) return false;
   if (!vertex_shader_.Init(GL_VERTEX_SHADER, default_vert_shader_source))
     return false;
-  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, landscape_frag_shader_source))
+  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, texture_frag_shader_source))
     return false;
   if (!program_.Init()) return false;
+
+  if (!texture_.Init() || !texture_.Load(texturePath)) return false;
   if (!sampler_.Init()) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
@@ -113,6 +111,11 @@ Landscape::Init()
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
+  texture_.GenerateMipmap(GL_TEXTURE_2D);
+  sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  base_technique_.Bind(0, "floor_texture", &texture_, GL_TEXTURE_2D, &sampler_);
+
   base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
       GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
 
@@ -122,7 +125,7 @@ Landscape::Init()
 }
 
 void
-Landscape::ConstructVertices()
+Landscape::ConstructVertices(float repeat)
 {
   float mountains[][4] = {
       // {x, z, height, flatness}
@@ -136,7 +139,7 @@ Landscape::ConstructVertices()
     for (int32_t j = -count_x_; j <= count_x_; j++) {
       float x = (float)j * length_;
       float z = (float)i * length_;
-      float u = (float)j / count_x_ / 2 + .5f;
+      float u = ((float)j / count_x_ / 2 + .5f) * repeat;
       float v = (float)i / count_z_ / 2 + .5f;
       float y = 0;
 
