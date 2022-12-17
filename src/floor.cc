@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <iostream>
 
 #include "floor.frag.h"
 #include "floor.vert.h"
@@ -34,6 +35,7 @@ Floor::Floor(
       base_technique_(system)
 {
   ConstructVertices();
+  ConstructElements();
 }
 
 Floor::~Floor()
@@ -56,11 +58,15 @@ Floor::Render()
 bool
 Floor::Init()
 {
-  fd_ = zukou::Util::CreateAnonymousFile(vertex_buffer_size());
-  if (!pool_.Init(fd_, vertex_buffer_size())) return false;
+  fd_ = zukou::Util::CreateAnonymousFile(pool_size());
+  if (!pool_.Init(fd_, pool_size())) return false;
   if (!vertex_buffer_.Init(&pool_, 0, vertex_buffer_size())) return false;
+  if (!element_array_buffer_.Init(
+          &pool_, vertex_buffer_size(), element_array_buffer_size()))
+    return false;
 
   if (!gl_vertex_buffer_.Init()) return false;
+  if (!gl_element_array_buffer_.Init()) return false;
   if (!vertex_array_.Init()) return false;
   if (!vertex_shader_.Init(GL_VERTEX_SHADER, floor_vert_shader_source))
     return false;
@@ -75,15 +81,20 @@ Floor::Init()
   if (!base_technique_.Init(&rendering_unit_)) return false;
 
   {
-    auto vertex_buffer_data =
-        mmap(nullptr, vertex_buffer_size(), PROT_WRITE, MAP_SHARED, fd_, 0);
+    auto vertex_buffer_data = static_cast<char*>(
+        mmap(nullptr, pool_size(), PROT_WRITE, MAP_SHARED, fd_, 0));
+    auto element_array_buffer_data = vertex_buffer_data + vertex_buffer_size();
 
     std::memcpy(vertex_buffer_data, vertices_.data(), vertex_buffer_size());
+    std::memcpy(element_array_buffer_data, elements_.data(),
+        element_array_buffer_size());
 
-    munmap(vertex_buffer_data, vertex_buffer_size());
+    munmap(vertex_buffer_data, pool_size());
   }
 
   gl_vertex_buffer_.Data(GL_ARRAY_BUFFER, &vertex_buffer_, GL_STATIC_DRAW);
+  gl_element_array_buffer_.Data(
+      GL_ELEMENT_ARRAY_BUFFER, &element_array_buffer_, GL_STATIC_DRAW);
 
   program_.AttachShader(&vertex_shader_);
   program_.AttachShader(&fragment_shader_);
@@ -99,11 +110,13 @@ Floor::Init()
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  texture_.GenerateMipmap(GL_TEXTURE_2D);
+  sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   base_technique_.Bind(0, "floor_texture", &texture_, GL_TEXTURE_2D, &sampler_);
 
-  base_technique_.DrawArrays(GL_TRIANGLE_FAN, 0, vertices_.size());
+  base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
+      GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
 
   initialized_ = true;
 
@@ -114,13 +127,53 @@ void
 Floor::ConstructVertices()
 {
   const static int resolution = 32;
-  vertices_.emplace_back(0, 0, 0, 0, 0);
-  for (float i = 0; i <= resolution; i++) {
-    float theta = M_PI * 2.f * i / float(resolution);
-    float x = radius_ * cosf(theta);
-    float y = 0.2f;
-    float z = radius_ * sinf(theta);
-    vertices_.emplace_back(x, y, z, x, z);
+  const static int radial_resolution = 10;
+  float y_val = 0.2f;
+  vertices_.emplace_back(0, y_val, 0, 0, 0);
+  for (float r = 1; r <= radial_resolution; r++) {
+    float this_radius = radius_ / radial_resolution * r;
+    for (float i = 0; i <= resolution; i++) {
+      float theta = M_PI * 2.f * i / float(resolution);
+      float x = this_radius * cosf(theta);
+      float y = y_val;
+      float z = this_radius * sinf(theta);
+      vertices_.emplace_back(x, y, z, x, z);
+    }
+  }
+}
+
+void
+Floor::ConstructElements()
+{
+  const static int resolution = 32;
+  const static int radial_resolution = 10;
+  ushort O = 0;
+
+  // center circle
+  for (int32_t i = 1; i <= resolution; i++) {
+    ushort A = i;
+    ushort B = i + 1;
+    elements_.push_back(A);
+    elements_.push_back(B);
+    elements_.push_back(O);
+  }
+
+  // around
+  for (int32_t r = 0; r <= radial_resolution - 1; r++) {
+    for (int32_t i = 0; i <= resolution; i++) {
+      ushort A = 1 + r * (resolution + 1) + i;
+      ushort B = 1 + r * (resolution + 1) + i + 1;
+      ushort C = 1 + (r + 1) * (resolution + 1) + i;
+      ushort D = 1 + (r + 1) * (resolution + 1) + i + 1;
+
+      elements_.push_back(A);
+      elements_.push_back(B);
+      elements_.push_back(C);
+
+      elements_.push_back(B);
+      elements_.push_back(C);
+      elements_.push_back(D);
+    }
   }
 }
 

@@ -29,6 +29,7 @@ class Floor
   bool Init();
 
   void ConstructVertices();
+  void ConstructElements();
 
   bool initialized_ = false;
 
@@ -53,14 +54,29 @@ class Floor
   zukou::GlBaseTechnique base_technique_;
 
   std::vector<Vertex> vertices_;
+  std::vector<ushort> elements_;
 
   inline size_t vertex_buffer_size();
+  inline size_t element_array_buffer_size();
+  inline size_t pool_size();
 };
 
 inline size_t
 Floor::vertex_buffer_size()
 {
   return sizeof(decltype(vertices_)::value_type) * vertices_.size();
+}
+
+inline size_t
+Floor::element_array_buffer_size()
+{
+  return sizeof(decltype(elements_)::value_type) * elements_.size();
+}
+
+inline size_t
+Floor::pool_size()
+{
+  return vertex_buffer_size() + element_array_buffer_size();
 }
 
 }  // namespace zennist
