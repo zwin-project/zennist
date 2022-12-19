@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "floor-edge.h"
 #include "floor.h"
 #include "jpeg-texture.h"
 #include "landscape.h"
@@ -31,6 +32,7 @@ class Application final : public zukou::IExpansiveDelegate
         landscape2_(&system_, &space_),
         landscape3_(&system_, &space_),
         floor_(&system_, &space_),
+        floorEdge_(&system_, &space_),
         bg_(&system_, &space_, 8, false){};
 
   bool Init()
@@ -54,6 +56,9 @@ class Application final : public zukou::IExpansiveDelegate
 
     if (!bg_.Render(990, glm::mat4(1))) return false;
     if (!floor_.Render()) return false;
+    if (!floorEdge_.Render(
+            1.f, glm::translate(glm::mat4(1), glm::vec3(0, .21f, 0))))
+      return false;
 
     space_.Commit();
 
@@ -72,6 +77,7 @@ class Application final : public zukou::IExpansiveDelegate
   Landscape landscape2_;
   Landscape landscape3_;
   Floor floor_;
+  FloorEdge floorEdge_;
   Sphere bg_;
 };
 
