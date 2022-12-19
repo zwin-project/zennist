@@ -6,8 +6,8 @@
 #include <cstring>
 #include <iostream>
 
+#include "default.vert.h"
 #include "floor.frag.h"
-#include "floor.vert.h"
 
 namespace {
 
@@ -50,9 +50,15 @@ Floor::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Floor::Render()
+Floor::Render(float radius, glm::mat4 transform)
 {
-  return initialized_ || Init() == true;
+  if (!initialized_ && Init() == false) {
+    return false;
+  }
+  auto local_model = glm::scale(transform, glm::vec3(radius));
+  base_technique_.Uniform(0, "local_model", local_model);
+
+  return true;
 }
 
 bool
@@ -68,7 +74,7 @@ Floor::Init()
   if (!gl_vertex_buffer_.Init()) return false;
   if (!gl_element_array_buffer_.Init()) return false;
   if (!vertex_array_.Init()) return false;
-  if (!vertex_shader_.Init(GL_VERTEX_SHADER, floor_vert_shader_source))
+  if (!vertex_shader_.Init(GL_VERTEX_SHADER, default_vert_shader_source))
     return false;
   if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, floor_frag_shader_source))
     return false;
@@ -128,14 +134,13 @@ Floor::ConstructVertices()
 {
   const static int resolution = 32;
   const static int radial_resolution = 10;
-  float y_val = 0.2f;
-  vertices_.emplace_back(0, y_val, 0, 0, 0);
+  vertices_.emplace_back(0, 0, 0, 0, 0);
   for (float r = 1; r <= radial_resolution; r++) {
     float this_radius = radius_ / radial_resolution * r;
     for (float i = 0; i <= resolution; i++) {
       float theta = M_PI * 2.f * i / float(resolution);
       float x = this_radius * cosf(theta);
-      float y = y_val;
+      float y = 0;
       float z = this_radius * sinf(theta);
       vertices_.emplace_back(x, y, z, x, z);
     }

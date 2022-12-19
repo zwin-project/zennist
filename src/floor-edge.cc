@@ -12,9 +12,8 @@
 namespace zennist {
 
 FloorEdge::FloorEdge(
-    zukou::System* system, zukou::VirtualObject* virtual_object, float radius)
+    zukou::System* system, zukou::VirtualObject* virtual_object)
     : virtual_object_(virtual_object),
-      radius_(radius),
       pool_(system),
       gl_vertex_buffer_(system),
       gl_element_array_buffer_(system),
@@ -119,14 +118,13 @@ FloorEdge::ConstructVertices()
   const static int resolution = 32;
   const static int radial_resolution = 2;
   const static float inner_ratio = 0.95f;
-  float y_val = 0.f;
   for (float r = 0; r <= radial_resolution; r++) {
-    float this_radius = radius_ * inner_ratio +
-                        radius_ * (1.f - inner_ratio) / radial_resolution * r;
+    float this_radius =
+        1.f * inner_ratio + 1.f * (1.f - inner_ratio) / radial_resolution * r;
     for (float i = 0; i <= resolution; i++) {
       float theta = M_PI * 2.f * i / float(resolution);
       float x = this_radius * cosf(theta);
-      float y = y_val;
+      float y = 0;
       float z = this_radius * sinf(theta);
       vertices_.emplace_back(x, y, z, x, z);
     }

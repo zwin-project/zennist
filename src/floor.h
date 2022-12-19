@@ -20,10 +20,10 @@ class Floor
   DISABLE_MOVE_AND_COPY(Floor);
   Floor() = delete;
   Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
-      float radius = 5.f);
+      float radius);
   ~Floor();
 
-  bool Render();
+  bool Render(float scale, glm::mat4 transform);
 
  private:
   bool Init();
@@ -35,7 +35,7 @@ class Floor
 
   zukou::VirtualObject* virtual_object_;
 
-  const float radius_;
+  float radius_;
 
   int fd_ = 0;
   zukou::ShmPool pool_;

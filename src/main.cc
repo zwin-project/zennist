@@ -31,33 +31,44 @@ class Application final : public zukou::IExpansiveDelegate
         landscape1_(&system_, &space_),
         landscape2_(&system_, &space_),
         landscape3_(&system_, &space_),
-        floor_(&system_, &space_),
+        floor_(&system_, &space_, 3.f),
+        floorUnder_(&system_, &space_, 4.5f),
         floorEdge_(&system_, &space_),
+        floorEdgeUnder_(&system_, &space_),
         bg_(&system_, &space_, 8, false){};
 
   bool Init()
   {
     if (!system_.Init()) return false;
     if (!space_.Init()) return false;
-    if (!landscape1_.Render(.3f, glm::mat4(1), greenBg1TexturePath, 100.0f))
+    if (!landscape1_.Render(.3f,
+            glm::translate(glm::mat4(1), glm::vec3(0, -.4f, 0)),
+            greenBg1TexturePath, 100.0f))
       return false;
     if (!landscape2_.Render(1.f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 4, glm::vec3(0, 1, 0)),
-                glm::vec3(0, -.3f, 0)),
+                glm::vec3(0, -.7f, 0)),
             greenBg2TexturePath, 200.0f))
       return false;
     if (!landscape3_.Render(2.f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
-                glm::vec3(0, -.5f, 0)),
+                glm::vec3(0, -.9f, 0)),
             greenBg3TexturePath, 300.0f))
       return false;
 
     if (!bg_.Render(990, glm::mat4(1))) return false;
-    if (!floor_.Render()) return false;
+    if (!floor_.Render(1.f, glm::translate(glm::mat4(1), glm::vec3(0, 0, 0))))
+      return false;
+    if (!floorUnder_.Render(
+            1.f, glm::translate(glm::mat4(1), glm::vec3(0, -.2f, 0))))
+      return false;
     if (!floorEdge_.Render(
-            1.f, glm::translate(glm::mat4(1), glm::vec3(0, .21f, 0))))
+            3.f, glm::translate(glm::mat4(1), glm::vec3(0, .01f, 0))))
+      return false;
+    if (!floorEdgeUnder_.Render(
+            4.5f, glm::translate(glm::mat4(1), glm::vec3(0, -.19f, 0))))
       return false;
 
     space_.Commit();
@@ -77,7 +88,9 @@ class Application final : public zukou::IExpansiveDelegate
   Landscape landscape2_;
   Landscape landscape3_;
   Floor floor_;
+  Floor floorUnder_;
   FloorEdge floorEdge_;
+  FloorEdge floorEdgeUnder_;
   Sphere bg_;
 };
 

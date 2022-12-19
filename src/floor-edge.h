@@ -17,8 +17,7 @@ class FloorEdge
  public:
   DISABLE_MOVE_AND_COPY(FloorEdge);
   FloorEdge() = delete;
-  FloorEdge(zukou::System* system, zukou::VirtualObject* virtual_object,
-      float radius = 5.f);
+  FloorEdge(zukou::System* system, zukou::VirtualObject* virtual_object);
   ~FloorEdge();
 
   bool Render(float radius, glm::mat4 transform);
@@ -36,8 +35,6 @@ class FloorEdge
   bool initialized_ = false;
 
   zukou::VirtualObject* virtual_object_;
-
-  const float radius_;
 
   int fd_ = 0;
   zukou::ShmPool pool_;
