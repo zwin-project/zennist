@@ -7,6 +7,12 @@
 #include "landscape.h"
 #include "sphere.h"
 
+namespace {
+constexpr char greenBg1TexturePath[] = ZENNIST_ASSET_DIR "/green_bg_1.jpg";
+constexpr char greenBg2TexturePath[] = ZENNIST_ASSET_DIR "/green_bg_2.jpg";
+constexpr char greenBg3TexturePath[] = ZENNIST_ASSET_DIR "/green_bg_3.jpg";
+}  // namespace
+
 namespace zennist {
 
 glm::vec4
@@ -31,22 +37,19 @@ class Application final : public zukou::IExpansiveDelegate
   {
     if (!system_.Init()) return false;
     if (!space_.Init()) return false;
-    if (!landscape1_.Render(.3f, glm::mat4(1), RgbColor(40, 57, 64),
-            RgbColor(37, 50, 66), RgbColor(255, 255, 255), 50.0, .95f))
+    if (!landscape1_.Render(.3f, glm::mat4(1), greenBg1TexturePath, 100.0f))
       return false;
-    if (!landscape2_.Render(.8f,
+    if (!landscape2_.Render(1.f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 4, glm::vec3(0, 1, 0)),
-                glm::vec3(0, -.1f, 0)),
-            RgbColor(76, 115, 131), RgbColor(95, 113, 122),
-            RgbColor(255, 255, 255), 70.0, .95f))
+                glm::vec3(0, -.3f, 0)),
+            greenBg2TexturePath, 200.0f))
       return false;
-    if (!landscape3_.Render(1.5f,
+    if (!landscape3_.Render(2.f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
-                glm::vec3(0, -.1f, 0)),
-            RgbColor(148, 167, 156), RgbColor(123, 146, 147),
-            RgbColor(255, 255, 255), 120.0, .95f))
+                glm::vec3(0, -.5f, 0)),
+            greenBg3TexturePath, 300.0f))
       return false;
 
     if (!bg_.Render(990, glm::mat4(1))) return false;

@@ -12,10 +12,18 @@ in vec4 pos;
 in vec2 uv;
 out vec4 out_color;
 
+vec4 frag_stripe(float x);
+
 void
 main()
 {
-  vec4 base_color = mix(color_base1, color_base2, uv.x);
-  float is_stripe = step(threshold, sin(uv.x * M_PI * 2. * freq));
-  out_color = mix(base_color, color_stripe, is_stripe);
+  out_color = frag_stripe(uv.x);
+}
+
+vec4
+frag_stripe(float x)
+{
+  vec4 base_color = mix(color_base1, color_base2, x);
+  float is_stripe = step(threshold, sin(x * M_PI * 2. * freq));
+  return mix(base_color, color_stripe, is_stripe);
 }
