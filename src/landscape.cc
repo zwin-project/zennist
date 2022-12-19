@@ -131,7 +131,7 @@ Landscape::ConstructVertices(float repeat)
       // {x, z, height, flatness}
       {200, -200, 60, 250.f},
       {-300, -100, 40, 300.f},
-      {-100, 300, 70, 150.f},
+      {-100, 150, 15, 150.f},
       {300, 0, 20, 300.f},
   };
 
