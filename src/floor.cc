@@ -142,7 +142,7 @@ Floor::ConstructVertices(int resolution, int radial_resolution)
       float x = this_radius * cosf(theta);
       float y = 0;
       float z = this_radius * sinf(theta);
-      vertices_.emplace_back(x, y, z, x, z);
+      vertices_.emplace_back(x, y, z, x * 2.f, z * 2.f);
     }
   }
 }
