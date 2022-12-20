@@ -67,6 +67,10 @@
 
 #include <vector>
 
+#include "jpeg-texture.h"
+
+namespace zennist {
+
 class Sphere
 {
   struct Vertex {
@@ -79,10 +83,8 @@ class Sphere
   DISABLE_MOVE_AND_COPY(Sphere);
   Sphere() = delete;
   Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,
-      int32_t resolution = 8, bool wire = false);
+      int32_t resolution = 8);
   ~Sphere();
-
-  void Bind(std::unique_ptr<zukou::GlTexture> texture);
 
   bool Render(float radius, glm::mat4 transform);
   glm::vec4 rgbColor(float r, float g, float b)
@@ -101,7 +103,6 @@ class Sphere
   zukou::VirtualObject* virtual_object_;
 
   const int32_t resolution_;
-  const bool wire_;
 
   int fd_ = 0;
   zukou::ShmPool pool_;
@@ -114,8 +115,8 @@ class Sphere
   zukou::GlShader vertex_shader_;
   zukou::GlShader fragment_shader_;
   zukou::GlProgram program_;
-  std::unique_ptr<zukou::GlTexture> texture_;
   zukou::GlSampler sampler_;
+  JpegTexture texture_;
 
   zukou::RenderingUnit rendering_unit_;
   zukou::GlBaseTechnique base_technique_;
@@ -147,3 +148,5 @@ Sphere::pool_size()
 {
   return vertex_buffer_size() + element_array_buffer_size();
 }
+
+}  // namespace zennist

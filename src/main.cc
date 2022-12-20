@@ -35,7 +35,7 @@ class Application final : public zukou::IExpansiveDelegate
         floorUnder_(&system_, &space_, 4.5f),
         floorEdge_(&system_, &space_),
         floorEdgeUnder_(&system_, &space_),
-        bg_(&system_, &space_, 8, false){};
+        bg_(&system_, &space_, 8){};
 
   bool Init()
   {
