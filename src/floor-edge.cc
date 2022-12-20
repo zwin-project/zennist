@@ -24,8 +24,11 @@ FloorEdge::FloorEdge(
       rendering_unit_(system),
       base_technique_(system)
 {
-  ConstructVertices();
-  ConstructElements();
+  const static int resolution = 64;
+  const static int radial_resolution = 2;
+  const static float inner_ratio = 0.95f;
+  ConstructVertices(resolution, radial_resolution, inner_ratio);
+  ConstructElements(resolution, radial_resolution);
 }
 
 FloorEdge::~FloorEdge()
@@ -47,7 +50,7 @@ FloorEdge::Render(float radius, glm::mat4 transform)
   }
   auto local_model = glm::scale(transform, glm::vec3(radius));
   base_technique_.Uniform(0, "local_model", local_model);
-  base_technique_.Uniform(0, "color", rgbColor(35, 35, 35));
+  base_technique_.Uniform(0, "color", rgbColor(15, 15, 15));
 
   return true;
 }
@@ -113,11 +116,9 @@ FloorEdge::Init()
 }
 
 void
-FloorEdge::ConstructVertices()
+FloorEdge::ConstructVertices(
+    int resolution, int radial_resolution, float inner_ratio)
 {
-  const static int resolution = 32;
-  const static int radial_resolution = 2;
-  const static float inner_ratio = 0.95f;
   for (float r = 0; r <= radial_resolution; r++) {
     float this_radius =
         1.f * inner_ratio + 1.f * (1.f - inner_ratio) / radial_resolution * r;
@@ -132,11 +133,8 @@ FloorEdge::ConstructVertices()
 }
 
 void
-FloorEdge::ConstructElements()
+FloorEdge::ConstructElements(int resolution, int radial_resolution)
 {
-  const static int resolution = 32;
-  const static int radial_resolution = 2;
-
   // around
   for (int32_t r = 0; r <= radial_resolution - 1; r++) {
     for (int32_t i = 0; i <= resolution; i++) {

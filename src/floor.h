@@ -28,8 +28,8 @@ class Floor
  private:
   bool Init();
 
-  void ConstructVertices();
-  void ConstructElements();
+  void ConstructVertices(int resolution, int radial_resolution);
+  void ConstructElements(int resolution, int radial_resolution);
 
   bool initialized_ = false;
 

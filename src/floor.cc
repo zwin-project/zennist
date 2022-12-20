@@ -34,8 +34,10 @@ Floor::Floor(
       rendering_unit_(system),
       base_technique_(system)
 {
-  ConstructVertices();
-  ConstructElements();
+  const static int resolution = 64;
+  const static int radial_resolution = 10;
+  ConstructVertices(resolution, radial_resolution);
+  ConstructElements(resolution, radial_resolution);
 }
 
 Floor::~Floor()
@@ -130,10 +132,8 @@ Floor::Init()
 }
 
 void
-Floor::ConstructVertices()
+Floor::ConstructVertices(int resolution, int radial_resolution)
 {
-  const static int resolution = 32;
-  const static int radial_resolution = 10;
   vertices_.emplace_back(0, 0, 0, 0, 0);
   for (float r = 1; r <= radial_resolution; r++) {
     float this_radius = radius_ / radial_resolution * r;
@@ -148,10 +148,8 @@ Floor::ConstructVertices()
 }
 
 void
-Floor::ConstructElements()
+Floor::ConstructElements(int resolution, int radial_resolution)
 {
-  const static int resolution = 32;
-  const static int radial_resolution = 10;
   ushort O = 0;
 
   // center circle

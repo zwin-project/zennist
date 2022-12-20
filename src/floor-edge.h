@@ -29,8 +29,9 @@ class FloorEdge
  private:
   bool Init();
 
-  void ConstructVertices();
-  void ConstructElements();
+  void ConstructVertices(
+      int resolution, int radial_resolution, float inner_ratio);
+  void ConstructElements(int resolution, int radial_resolution);
 
   bool initialized_ = false;
 

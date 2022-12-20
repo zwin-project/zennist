@@ -18,6 +18,12 @@ void
 main()
 {
   out_color = frag_stripe(uv.x);
+  // vec4 color_1 = frag_stripe(uv.x);
+  // vec4 color_2 = frag_stripe(clamp(uv.x + dFdx(uv.x), 0.0f, 1.0f));
+  // vec4 color_3 = frag_stripe(clamp(uv.x - dFdx(uv.x), 0.0f, 1.0f));
+  // vec4 color_4 = frag_stripe(clamp(uv.x + dFdy(uv.x), 0.0f, 1.0f));
+  // vec4 color_5 = frag_stripe(clamp(uv.x - dFdy(uv.x), 0.0f, 1.0f));
+  // out_color = (color_1 + color_2 + color_3 + color_4 + color_5) / 5.0f;
 }
 
 vec4
