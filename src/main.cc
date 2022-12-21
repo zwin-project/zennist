@@ -1,6 +1,7 @@
 #include <zukou.h>
 
 #include <iostream>
+#include <string>
 
 #include "floor-edge.h"
 #include "floor.h"
@@ -8,13 +9,13 @@
 #include "landscape.h"
 #include "sphere.h"
 
-namespace {
-constexpr char greenBg1TexturePath[] = ZENNIST_ASSET_DIR "/green_bg_1.jpg";
-constexpr char greenBg2TexturePath[] = ZENNIST_ASSET_DIR "/green_bg_2.jpg";
-constexpr char greenBg3TexturePath[] = ZENNIST_ASSET_DIR "/green_bg_3.jpg";
-}  // namespace
-
 namespace zennist {
+
+enum class Theme {
+  Oka,   // hills
+  Nami,  // waves
+  Kumo   // clouds
+};
 
 glm::vec4
 RgbColor(float r, float g, float b)
@@ -37,28 +38,51 @@ class Application final : public zukou::IExpansiveDelegate
         floorEdgeUnder_(&system_, &space_),
         bg_(&system_, &space_, 8){};
 
+  std::string GetTexturePath(const char* name)
+  {
+    std::string str = ZENNIST_ASSET_DIR;
+    switch (theme_) {
+      case Theme::Oka:
+        str += "/green_";
+        break;
+      case Theme::Nami:
+        str += "/blue_";
+        break;
+      case Theme::Kumo:
+        str += "/white_";
+        break;
+      default:
+        str += "/green_";
+        break;
+    }
+    str += name;
+    str += ".jpg";
+    return str;
+  }
+
   bool Init()
   {
     if (!system_.Init()) return false;
     if (!space_.Init()) return false;
     if (!landscape1_.Render(.3f,
             glm::translate(glm::mat4(1), glm::vec3(0, -.4f, 0)),
-            greenBg1TexturePath, 100.0f))
+            GetTexturePath("bg_1").c_str(), 100.0f))
       return false;
     if (!landscape2_.Render(1.f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 4, glm::vec3(0, 1, 0)),
                 glm::vec3(0, -.7f, 0)),
-            greenBg2TexturePath, 200.0f))
+            GetTexturePath("bg_2").c_str(), 200.0f))
       return false;
     if (!landscape3_.Render(2.f,
             glm::translate(
                 glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
                 glm::vec3(0, -.9f, 0)),
-            greenBg3TexturePath, 300.0f))
+            GetTexturePath("bg_3").c_str(), 300.0f))
       return false;
 
-    if (!bg_.Render(990, glm::mat4(1))) return false;
+    if (!bg_.Render(990, glm::mat4(1), GetTexturePath("sky_shrink").c_str()))
+      return false;
     if (!floor_.Render(1.f, glm::translate(glm::mat4(1), glm::vec3(0, 0, 0))))
       return false;
     if (!floorUnder_.Render(
@@ -81,6 +105,8 @@ class Application final : public zukou::IExpansiveDelegate
   void Shutdown() override { system_.Terminate(EXIT_SUCCESS); }
 
  private:
+  Theme theme_ = Theme::Nami;
+
   zukou::System system_;
   zukou::Expansive space_;
 

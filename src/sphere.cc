@@ -10,12 +10,6 @@
 #include "default.vert.h"
 #include "sky.frag.h"
 
-namespace {
-
-constexpr char kSkyTexturePath[] = ZENNIST_ASSET_DIR "/green_sky_shrink.jpg";
-
-}  // namespace
-
 namespace zennist {
 
 Sphere::Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,
@@ -47,9 +41,9 @@ Sphere::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Sphere::Render(float radius, glm::mat4 transform)
+Sphere::Render(float radius, glm::mat4 transform, const char* texturePath)
 {
-  if (!initialized_ && Init() == false) {
+  if (!initialized_ && Init(texturePath) == false) {
     return false;
   }
 
@@ -60,7 +54,7 @@ Sphere::Render(float radius, glm::mat4 transform)
 }
 
 bool
-Sphere::Init()
+Sphere::Init(const char* texturePath)
 {
   ConstructVertices();
   ConstructElements();
@@ -84,7 +78,7 @@ Sphere::Init()
   if (!program_.Init()) return false;
 
   if (!sampler_.Init()) return false;
-  if (!texture_.Init() || !texture_.Load(kSkyTexturePath)) return false;
+  if (!texture_.Init() || !texture_.Load(texturePath)) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
   if (!base_technique_.Init(&rendering_unit_)) return false;

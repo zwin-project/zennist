@@ -86,14 +86,14 @@ class Sphere
       int32_t resolution = 8);
   ~Sphere();
 
-  bool Render(float radius, glm::mat4 transform);
+  bool Render(float radius, glm::mat4 transform, const char* texturePath);
   glm::vec4 rgbColor(float r, float g, float b)
   {
     return glm::vec4(r / 255, g / 255, b / 255, 1);
   }
 
  private:
-  bool Init();
+  bool Init(const char* texturePath);
 
   void ConstructVertices();
   void ConstructElements();
