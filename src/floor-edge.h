@@ -4,11 +4,9 @@
 
 #include <vector>
 
-#include "jpeg-texture.h"
-
 namespace zennist {
 
-class Floor
+class FloorEdge
 {
   struct Vertex {
     Vertex(float x, float y, float z, float u, float v);
@@ -17,25 +15,27 @@ class Floor
   };
 
  public:
-  DISABLE_MOVE_AND_COPY(Floor);
-  Floor() = delete;
-  Floor(zukou::System* system, zukou::VirtualObject* virtual_object,
-      float radius);
-  ~Floor();
+  DISABLE_MOVE_AND_COPY(FloorEdge);
+  FloorEdge() = delete;
+  FloorEdge(zukou::System* system, zukou::VirtualObject* virtual_object);
+  ~FloorEdge();
 
-  bool Render(float scale, glm::mat4 transform);
+  bool Render(float radius, glm::mat4 transform);
+  glm::vec4 rgbColor(float r, float g, float b)
+  {
+    return glm::vec4(r / 255, g / 255, b / 255, 1);
+  }
 
  private:
   bool Init();
 
-  void ConstructVertices(int resolution, int radial_resolution);
+  void ConstructVertices(
+      int resolution, int radial_resolution, float inner_ratio);
   void ConstructElements(int resolution, int radial_resolution);
 
   bool initialized_ = false;
 
   zukou::VirtualObject* virtual_object_;
-
-  float radius_;
 
   int fd_ = 0;
   zukou::ShmPool pool_;
@@ -48,8 +48,6 @@ class Floor
   zukou::GlShader vertex_shader_;
   zukou::GlShader fragment_shader_;
   zukou::GlProgram program_;
-  zukou::GlSampler sampler_;
-  JpegTexture texture_;
   zukou::RenderingUnit rendering_unit_;
   zukou::GlBaseTechnique base_technique_;
 
@@ -62,19 +60,19 @@ class Floor
 };
 
 inline size_t
-Floor::vertex_buffer_size()
+FloorEdge::vertex_buffer_size()
 {
   return sizeof(decltype(vertices_)::value_type) * vertices_.size();
 }
 
 inline size_t
-Floor::element_array_buffer_size()
+FloorEdge::element_array_buffer_size()
 {
   return sizeof(decltype(elements_)::value_type) * elements_.size();
 }
 
 inline size_t
-Floor::pool_size()
+FloorEdge::pool_size()
 {
   return vertex_buffer_size() + element_array_buffer_size();
 }

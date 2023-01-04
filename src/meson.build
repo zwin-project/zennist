@@ -2,6 +2,7 @@ _sources = [
   'landscape.cc',
   'sphere.cc',
   'floor.cc',
+  'floor-edge.cc',
   'jpeg-texture.cc',
   'main.cc',
 

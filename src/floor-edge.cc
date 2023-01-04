@@ -1,22 +1,19 @@
-#include "landscape.h"
+#include "floor-edge.h"
 
 #include <sys/mman.h>
 #include <unistd.h>
 
 #include <cstring>
+#include <iostream>
 
+#include "color.frag.h"
 #include "default.vert.h"
-#include "texture.frag.h"
 
 namespace zennist {
 
-Landscape::Landscape(zukou::System* system,
-    zukou::VirtualObject* virtual_object, float length, uint32_t count_x,
-    uint32_t count_z)
+FloorEdge::FloorEdge(
+    zukou::System* system, zukou::VirtualObject* virtual_object)
     : virtual_object_(virtual_object),
-      length_(length),
-      count_x_(count_x),
-      count_z_(count_z),
       pool_(system),
       gl_vertex_buffer_(system),
       gl_element_array_buffer_(system),
@@ -24,41 +21,43 @@ Landscape::Landscape(zukou::System* system,
       vertex_shader_(system),
       fragment_shader_(system),
       program_(system),
-      sampler_(system),
-      texture_(system),
       rendering_unit_(system),
       base_technique_(system)
-{}
+{
+  const static int resolution = 64;
+  const static int radial_resolution = 2;
+  const static float inner_ratio = 0.95f;
+  ConstructVertices(resolution, radial_resolution, inner_ratio);
+  ConstructElements(resolution, radial_resolution);
+}
 
-Landscape::~Landscape()
+FloorEdge::~FloorEdge()
 {
   if (fd_ != 0) {
     close(fd_);
   }
 }
 
-Landscape::Vertex::Vertex(float x, float y, float z, float u, float v)
+FloorEdge::Vertex::Vertex(float x, float y, float z, float u, float v)
     : x(x), y(y), z(z), u(u), v(v)
 {}
 
 bool
-Landscape::Render(
-    float radius, glm::mat4 transform, const char* texturePath, float repeat)
+FloorEdge::Render(float radius, glm::mat4 transform)
 {
-  if (!initialized_ && Init(texturePath, repeat) == false) return true;
-
+  if (!initialized_ && Init() == false) {
+    return false;
+  }
   auto local_model = glm::scale(transform, glm::vec3(radius));
   base_technique_.Uniform(0, "local_model", local_model);
+  base_technique_.Uniform(0, "color", rgbColor(15, 15, 15));
 
   return true;
 }
 
 bool
-Landscape::Init(const char* texturePath, float repeat)
+FloorEdge::Init()
 {
-  ConstructVertices(repeat);
-  ConstructElements();
-
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());
   if (!pool_.Init(fd_, pool_size())) return false;
   if (!vertex_buffer_.Init(&pool_, 0, vertex_buffer_size())) return false;
@@ -71,12 +70,9 @@ Landscape::Init(const char* texturePath, float repeat)
   if (!vertex_array_.Init()) return false;
   if (!vertex_shader_.Init(GL_VERTEX_SHADER, default_vert_shader_source))
     return false;
-  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, texture_frag_shader_source))
+  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, color_frag_shader_source))
     return false;
   if (!program_.Init()) return false;
-
-  if (!texture_.Init() || !texture_.Load(texturePath)) return false;
-  if (!sampler_.Init()) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
   if (!base_technique_.Init(&rendering_unit_)) return false;
@@ -111,11 +107,6 @@ Landscape::Init(const char* texturePath, float repeat)
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  texture_.GenerateMipmap(GL_TEXTURE_2D);
-  sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  base_technique_.Bind(0, "floor_texture", &texture_, GL_TEXTURE_2D, &sampler_);
-
   base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
       GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
 
@@ -125,48 +116,32 @@ Landscape::Init(const char* texturePath, float repeat)
 }
 
 void
-Landscape::ConstructVertices(float repeat)
+FloorEdge::ConstructVertices(
+    int resolution, int radial_resolution, float inner_ratio)
 {
-  float mountains[][4] = {
-      // {x, z, height, flatness}
-      {200, -200, 60, 250.f},
-      {-300, -100, 40, 300.f},
-      {-100, 150, 15, 150.f},
-      {300, 0, 20, 300.f},
-  };
-
-  for (int32_t i = -count_z_; i <= count_z_; i++) {
-    for (int32_t j = -count_x_; j <= count_x_; j++) {
-      float x = (float)j * length_;
-      float z = (float)i * length_;
-      float u = ((float)j / count_x_ / 2 + .5f) * repeat;
-      float v = (float)i / count_z_ / 2 + .5f;
+  for (float r = 0; r <= radial_resolution; r++) {
+    float this_radius =
+        1.f * inner_ratio + 1.f * (1.f - inner_ratio) / radial_resolution * r;
+    for (float i = 0; i <= resolution; i++) {
+      float theta = M_PI * 2.f * i / float(resolution);
+      float x = this_radius * cosf(theta);
       float y = 0;
-
-      for (uint32_t k = 0; k < sizeof(mountains) / sizeof(mountains[0]); k++) {
-        float x0 = mountains[k][0];
-        float z0 = mountains[k][1];
-        float h = mountains[k][2];
-        float flatness = mountains[k][3];
-        float r = sqrtf(powf(x - x0, 2) + powf(z - z0, 2));
-        if (r > flatness) continue;
-        y += h * (cosf(M_PI * r / flatness) + 1.f) / 2.f;
-      }
-
-      vertices_.emplace_back(x, y, z, u, v);
+      float z = this_radius * sinf(theta);
+      vertices_.emplace_back(x, y, z, x, z);
     }
   }
 }
 
 void
-Landscape::ConstructElements()
+FloorEdge::ConstructElements(int resolution, int radial_resolution)
 {
-  for (int32_t z = 0; z <= 2 * count_z_ - 1; z++) {
-    for (int32_t x = 0; x <= 2 * count_x_ - 1; x++) {
-      ushort A = x + z * (2 * count_z_ + 1);
-      ushort B = (x + 1) + z * (2 * count_z_ + 1);
-      ushort C = x + (z + 1) * (2 * count_z_ + 1);
-      ushort D = (x + 1) + (z + 1) * (2 * count_z_ + 1);
+  // around
+  for (int32_t r = 0; r <= radial_resolution - 1; r++) {
+    for (int32_t i = 0; i <= resolution; i++) {
+      ushort A = r * (resolution + 1) + i;
+      ushort B = r * (resolution + 1) + i + 1;
+      ushort C = (r + 1) * (resolution + 1) + i;
+      ushort D = (r + 1) * (resolution + 1) + i + 1;
 
       elements_.push_back(A);
       elements_.push_back(B);
