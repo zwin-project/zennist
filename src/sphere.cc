@@ -10,11 +10,12 @@
 #include "default.vert.h"
 #include "sky.frag.h"
 
+namespace zennist {
+
 Sphere::Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,
-    int32_t resolution, bool wire)
+    int32_t resolution)
     : virtual_object_(virtual_object),
       resolution_(resolution),
-      wire_(wire),
       pool_(system),
       gl_vertex_buffer_(system),
       gl_element_array_buffer_(system),
@@ -23,6 +24,7 @@ Sphere::Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,
       fragment_shader_(system),
       program_(system),
       sampler_(system),
+      texture_(system),
       rendering_unit_(system),
       base_technique_(system)
 {}
@@ -39,36 +41,25 @@ Sphere::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Sphere::Render(float radius, glm::mat4 transform)
+Sphere::Render(float radius, glm::mat4 transform, const char* texturePath)
 {
-  if (!initialized_ && Init() == false) {
+  if (!initialized_ && Init(texturePath) == false) {
     return false;
   }
 
   auto local_model = glm::scale(transform, glm::vec3(radius));
   base_technique_.Uniform(0, "local_model", local_model);
 
-  if (wire_) base_technique_.Uniform(0, "color", glm::vec4(1, 0, 0, 1));
-  base_technique_.Uniform(0, "color1", rgbColor(241, 231, 219));
-  base_technique_.Uniform(0, "color2", rgbColor(139, 163, 164));
-
   return true;
 }
 
-void
-Sphere::Bind(std::unique_ptr<zukou::GlTexture> texture)
-{
-  texture_ = std::move(texture);
-}
-
 bool
-Sphere::Init()
+Sphere::Init(const char* texturePath)
 {
   ConstructVertices();
   ConstructElements();
 
-  const char* frag_shader_source =
-      wire_ ? color_frag_shader_source : sky_frag_shader_source;
+  const char* frag_shader_source = sky_frag_shader_source;
 
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());
   if (!pool_.Init(fd_, pool_size())) return false;
@@ -85,7 +76,9 @@ Sphere::Init()
   if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, frag_shader_source))
     return false;
   if (!program_.Init()) return false;
+
   if (!sampler_.Init()) return false;
+  if (!texture_.Init() || !texture_.Load(texturePath)) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
   if (!base_technique_.Init(&rendering_unit_)) return false;
@@ -120,18 +113,12 @@ Sphere::Init()
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  if (wire_) {
-    base_technique_.DrawElements(GL_LINES, elements_.size(), GL_UNSIGNED_SHORT,
-        0, &gl_element_array_buffer_);
-  } else {
-    if (texture_) {
-      base_technique_.Bind(0, "", texture_.get(), GL_TEXTURE_2D, &sampler_);
-      sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-    base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
-        GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
-  }
+  sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  base_technique_.Bind(0, "sky_texture", &texture_, GL_TEXTURE_2D, &sampler_);
+
+  base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
+      GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
 
   initialized_ = true;
 
@@ -165,41 +152,41 @@ Sphere::ConstructElements()
       ushort num_vertices_in_a_latitudinal_line = (4 * resolution_ + 1);
       ushort A = n * num_vertices_in_a_latitudinal_line + j;
       ushort B = A + 1;
-      ushort C = A - num_vertices_in_a_latitudinal_line;
+      // ushort C = A - num_vertices_in_a_latitudinal_line;
       ushort D = B - num_vertices_in_a_latitudinal_line;
       ushort E = A + num_vertices_in_a_latitudinal_line;
-      ushort F = B + num_vertices_in_a_latitudinal_line;
+      // ushort F = B + num_vertices_in_a_latitudinal_line;
 
-      if (wire_) {
-        elements_.push_back(A);
-        elements_.push_back(B);
+      // if (wire_) {
+      //   elements_.push_back(A);
+      //   elements_.push_back(B);
 
-        elements_.push_back(C);
-        elements_.push_back(D);
+      //   elements_.push_back(C);
+      //   elements_.push_back(D);
 
-        elements_.push_back(E);
-        elements_.push_back(F);
+      //   elements_.push_back(E);
+      //   elements_.push_back(F);
 
-        elements_.push_back(A);
-        elements_.push_back(C);
+      //   elements_.push_back(A);
+      //   elements_.push_back(C);
 
-        elements_.push_back(A);
-        elements_.push_back(E);
+      //   elements_.push_back(A);
+      //   elements_.push_back(E);
 
-        elements_.push_back(B);
-        elements_.push_back(D);
+      //   elements_.push_back(B);
+      //   elements_.push_back(D);
 
-        elements_.push_back(B);
-        elements_.push_back(F);
-      } else {
-        elements_.push_back(A);
-        elements_.push_back(E);
-        elements_.push_back(B);
+      //   elements_.push_back(B);
+      //   elements_.push_back(F);
+      // } else {
+      elements_.push_back(A);
+      elements_.push_back(E);
+      elements_.push_back(B);
 
-        elements_.push_back(B);
-        elements_.push_back(D);
-        elements_.push_back(A);
-      }
+      elements_.push_back(B);
+      elements_.push_back(D);
+      elements_.push_back(A);
+      // }
     }
   }
 }
@@ -219,3 +206,5 @@ Sphere::ConstructElements()
 // n+1 . . . E . . . F . .
 //           .       .
 //           .       .
+
+}  // namespace zennist
