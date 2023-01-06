@@ -37,13 +37,12 @@ class Application final : public zukou::IExpansiveDelegate
         landscape1_(&system_, &space_),
         landscape2_(&system_, &space_),
         landscape3_(&system_, &space_),
-        bg_(&system_, &space_, 8, false),
-        roof_(&system_, &space_){};
         floor_(&system_, &space_, 3.f),
         floorUnder_(&system_, &space_, 4.5f),
         floorEdge_(&system_, &space_),
         floorEdgeUnder_(&system_, &space_),
-        bg_(&system_, &space_, 8){};
+        bg_(&system_, &space_, 8),
+        roof_(&system_, &space_){};
 
   std::string GetTexturePath(const char* name)
   {
