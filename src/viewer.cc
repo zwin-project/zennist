@@ -1,5 +1,8 @@
 #include "viewer.h"
 
+#include <sys/mman.h>
+#include <unistd.h>
+
 #include "gltf.vert.h"
 #include "gltf_color.frag.h"
 #include "gltf_texture.frag.h"
@@ -17,6 +20,13 @@ Viewer::Viewer(zukou::System *system, zukou::VirtualObject *virtual_object)
       color_fragment_shader_(system),
       sampler_(system)
 {}
+
+Viewer::~Viewer()
+{
+  if (fd_ != 0) {
+    close(fd_);
+  }
+}
 
 bool
 Viewer::Load(const char *model_path)
@@ -84,14 +94,13 @@ Viewer::Setup()
   assert(model_->buffers.size() == 1);
   size_t pool_size = model_->buffers.at(0).data.size();
 
-  int fd = 0;
-  fd = zukou::Util::CreateAnonymousFile(pool_size);
+  fd_ = zukou::Util::CreateAnonymousFile(pool_size);
 
-  if (!pool_.Init(fd, pool_size)) return false;
+  if (!pool_.Init(fd_, pool_size)) return false;
 
   {
     auto buffer_data = static_cast<char *>(
-        mmap(nullptr, pool_size, PROT_WRITE, MAP_SHARED, fd, 0));
+        mmap(nullptr, pool_size, PROT_WRITE, MAP_SHARED, fd_, 0));
     std::memcpy(buffer_data, model_->buffers.at(0).data.data(), pool_size);
     munmap(buffer_data, pool_size);
   }

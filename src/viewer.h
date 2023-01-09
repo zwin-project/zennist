@@ -27,6 +27,7 @@ class Viewer : public zukou::IBoundedDelegate, public zukou::ISystemDelegate
   DISABLE_MOVE_AND_COPY(Viewer);
   Viewer() = delete;
   Viewer(zukou::System *system, zukou::VirtualObject *virtual_object);
+  ~Viewer();
 
   bool Render(float radius, glm::mat4 transform, const char *model_path);
 
@@ -48,6 +49,7 @@ class Viewer : public zukou::IBoundedDelegate, public zukou::ISystemDelegate
   zukou::System *system_;
   zukou::VirtualObject *virtual_object_;
 
+  int fd_ = 0;
   zukou::ShmPool pool_;
   zukou::GlShader vertex_shader_;
   zukou::GlShader texture_fragment_shader_;
