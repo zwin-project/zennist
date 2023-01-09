@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 
+#include "desk.h"
 #include "floor-edge.h"
 #include "floor.h"
 #include "jpeg-texture.h"
@@ -12,6 +13,7 @@
 
 namespace {
 constexpr char roofModelPath[] = ZENNIST_ASSET_DIR "/roof/zennist_roof.gltf";
+constexpr char deskModelPath[] = ZENNIST_ASSET_DIR "/desk/desk.gltf";
 }  // namespace
 
 namespace zennist {
@@ -42,7 +44,8 @@ class Application final : public zukou::IExpansiveDelegate
         floorEdge_(&system_, &space_),
         floorEdgeUnder_(&system_, &space_),
         bg_(&system_, &space_, 8),
-        roof_(&system_, &space_){};
+        roof_(&system_, &space_),
+        desk_(&system_, &space_){};
 
   std::string GetTexturePath(const char* name)
   {
@@ -104,6 +107,12 @@ class Application final : public zukou::IExpansiveDelegate
             glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
             roofModelPath))
       return false;
+    if (!desk_.Render(1.f,
+            glm::translate(
+                glm::rotate(glm::mat4(1), (float)-M_PI / 2, glm::vec3(0, 1, 0)),
+                glm::vec3(0, -0.2, 0)),
+            deskModelPath))
+      return false;
 
     space_.Commit();
 
@@ -129,6 +138,7 @@ class Application final : public zukou::IExpansiveDelegate
   FloorEdge floorEdgeUnder_;
   Sphere bg_;
   Roof roof_;
+  Desk desk_;
 };
 
 }  // namespace zennist

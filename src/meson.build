@@ -5,6 +5,7 @@ _sources = [
   'floor.cc',
   'floor-edge.cc',
   'roof.cc',
+  'desk.cc',
   'jpeg-texture.cc',
   'png-texture.cc',
   'viewer.cc',

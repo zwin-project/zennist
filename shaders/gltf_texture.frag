@@ -8,6 +8,8 @@ uniform vec2 in_offset;
 uniform vec2 in_scale;
 uniform float in_rotation;
 
+uniform float in_alpha_cutoff;
+
 in vec3 in_normal;
 in vec2 in_uv;
 
@@ -26,5 +28,9 @@ main()
   mat3 matrix = translation * rotation * scale;
   vec2 uv_transformed = ( matrix * vec3(in_uv.xy, 1) ).xy;
 
-  outputColor = texture(in_texture, uv_transformed);
+  vec4 color = texture(in_texture, uv_transformed);
+  if (color.a < in_alpha_cutoff) {
+    discard;
+  }
+  outputColor = color;
 }

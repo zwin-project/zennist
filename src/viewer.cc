@@ -328,6 +328,12 @@ Viewer::RenderMesh(const tinygltf::Mesh &mesh)
         }
       }
 
+      glm::vec1 uniform_alpha_cutoff(0.0f);
+      if (material.alphaMode == "MASK") {
+        uniform_alpha_cutoff[0] = material.alphaCutoff;
+      }
+      base_technique->Uniform(0, "in_alpha_cutoff", uniform_alpha_cutoff);
+
       base_technique->Bind(program_map_["texture"]);
     } else {
       assert(material.pbrMetallicRoughness.baseColorFactor.size() == 4);
