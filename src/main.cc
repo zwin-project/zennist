@@ -1,5 +1,6 @@
 #include <zukou.h>
 
+#include <cstring>
 #include <iostream>
 #include <string>
 
@@ -27,8 +28,9 @@ class Application final : public zukou::IExpansiveDelegate
 {
  public:
   DISABLE_MOVE_AND_COPY(Application);
-  Application()
-      : space_(&system_, this),
+  Application(Theme theme)
+      : theme_(theme),
+        space_(&system_, this),
         landscape1_(&system_, &space_),
         landscape2_(&system_, &space_),
         landscape3_(&system_, &space_),
@@ -105,7 +107,7 @@ class Application final : public zukou::IExpansiveDelegate
   void Shutdown() override { system_.Terminate(EXIT_SUCCESS); }
 
  private:
-  Theme theme_ = Theme::Nami;
+  Theme theme_;
 
   zukou::System system_;
   zukou::Expansive space_;
@@ -123,9 +125,18 @@ class Application final : public zukou::IExpansiveDelegate
 }  // namespace zennist
 
 int
-main()
+main(int argc, char* argv[])
 {
-  zennist::Application app;
+  auto theme = zennist::Theme::Nami;
+  if (argc >= 2) {
+    if (std::strcmp(argv[1], "Oka")) {
+      theme = zennist::Theme::Oka;
+    }
+    if (std::strcmp(argv[1], "Kumo")) {
+      theme = zennist::Theme::Kumo;
+    }
+  }
+  zennist::Application app(theme);
 
   if (!app.Init()) return EXIT_FAILURE;
 
