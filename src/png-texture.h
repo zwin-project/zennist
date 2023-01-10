@@ -1,21 +1,20 @@
 #pragma once
 
-#include <bits/types/FILE.h>
+#include <png.h>
 #include <stdio.h>
+#include <string.h>
 #include <zukou.h>
-//
-#include <jpeglib.h>
 
 #include "texture.h"
 
 namespace zennist {
 
-class JpegTexture final : public zukou::GlTexture, public Texture
+class PngTexture final : public zukou::GlTexture, public Texture
 {
  public:
-  DISABLE_MOVE_AND_COPY(JpegTexture);
-  JpegTexture(zukou::System *system);
-  ~JpegTexture();
+  DISABLE_MOVE_AND_COPY(PngTexture);
+  PngTexture(zukou::System *system);
+  ~PngTexture();
 
   bool Init();
 

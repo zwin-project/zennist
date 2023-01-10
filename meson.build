@@ -29,8 +29,11 @@ zukou_req = '0.0.3'
 glm_dep = dependency('glm')
 zukou_dep = dependency('zukou', version: zukou_req)
 jpeg_dep = dependency('libjpeg')
+png_dep = dependency('libpng')
 
 textify = files('tools/textify.sh')[0]
+
+public_inc = include_directories('include')
 
 install_subdir('assets', install_dir: get_option('datadir') / meson.project_name())
 cdata.set_quoted('ZENNIST_ASSET_DIR', get_option('prefix') / get_option('datadir') / meson.project_name() / 'assets')
