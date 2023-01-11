@@ -139,8 +139,8 @@ Landscape::ConstructVertices(float repeat)
     for (int32_t j = -count_x_; j <= count_x_; j++) {
       float x = (float)j * length_;
       float z = (float)i * length_;
-      float u = ((float)j / count_x_ / 2 + .5f) * repeat;
-      float v = (float)i / count_z_ / 2 + .5f;
+      float u = ((float)i / count_z_ / 2 + .5f) * repeat;
+      float v = (float)j / count_x_ / 2 + .5f;
       float y = 0;
 
       for (uint32_t k = 0; k < sizeof(mountains) / sizeof(mountains[0]); k++) {
