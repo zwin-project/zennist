@@ -9,12 +9,17 @@
 #include "floor.h"
 #include "jpeg-texture.h"
 #include "landscape.h"
+#include "launcher_icons.h"
 #include "roof.h"
 #include "sphere.h"
 
 namespace {
+constexpr char configPath[] = "~/.config/zen-desktop/config.toml";
+
 constexpr char roofModelPath[] = ZENNIST_ASSET_DIR "/roof/zennist_roof.gltf";
 constexpr char deskModelPath[] = ZENNIST_ASSET_DIR "/desk/desk.gltf";
+// constexpr char deskModelPath[] =
+// ZENNIST_ASSET_DIR "/desk_without_icons/desk.gltf";
 }  // namespace
 
 namespace zennist {
@@ -31,12 +36,14 @@ RgbColor(float r, float g, float b)
   return glm::vec4(r / 255, g / 255, b / 255, 1);
 }
 
-class Application final : public zukou::IExpansiveDelegate
+class Application final : public zukou::IExpansiveDelegate,
+                          public zukou::ISystemDelegate
 {
  public:
   DISABLE_MOVE_AND_COPY(Application);
   Application(Theme theme)
       : theme_(theme),
+        system_(this),
         space_(&system_, this),
         landscape1_(&system_, &space_),
         landscape2_(&system_, &space_),
@@ -47,7 +54,8 @@ class Application final : public zukou::IExpansiveDelegate
         floorEdgeUnder_(&system_, &space_),
         bg_(&system_, &space_, 8),
         roof_(&system_, &space_),
-        desk_(&system_, &space_){};
+        desk_(&system_, &space_),
+        launcher_icons_(&system_, &space_){};
 
   std::string GetTexturePath(const char* name)
   {
@@ -106,7 +114,9 @@ class Application final : public zukou::IExpansiveDelegate
             4.5f, glm::translate(glm::mat4(1), glm::vec3(0, -.19f, 0))))
       return false;
     if (!roof_.Render(1.f,
-            glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
+            glm::translate(
+                glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
+                glm::vec3(0, -0.5, 0)),
             roofModelPath))
       return false;
     if (!desk_.Render(1.f,
@@ -115,6 +125,7 @@ class Application final : public zukou::IExpansiveDelegate
                 glm::vec3(0, -0.2, 0)),
             deskModelPath))
       return false;
+    if (!launcher_icons_.Init({0, 0, 0, 0, 0, 0, 0})) return false;
 
     space_.Commit();
 
@@ -124,6 +135,28 @@ class Application final : public zukou::IExpansiveDelegate
   int Run() { return system_.Run(); }
 
   void Shutdown() override { system_.Terminate(EXIT_SUCCESS); }
+
+  void RayEnter(uint32_t /*serial*/, zukou::VirtualObject* /*virtual_object*/,
+      glm::vec3 /*origin*/, glm::vec3 /*direction*/) override
+  {}
+
+  void RayLeave(
+      uint32_t /*serial*/, zukou::VirtualObject* /*virtual_object*/) override
+  {}
+
+  void RayMotion(
+      uint32_t /*time*/, glm::vec3 origin, glm::vec3 direction) override
+  {
+    launcher_icons_.RayMotion(origin, direction);
+  }
+
+  void RayButton(uint32_t /*serial*/, uint32_t /*time*/, uint32_t button,
+      bool pressed) override
+  {
+    launcher_icons_.RayButton(button, pressed);
+  }
+
+  void RayAxisFrame(const zukou::RayAxisEvent& /*event*/) override{};
 
  private:
   Theme theme_;
@@ -141,6 +174,7 @@ class Application final : public zukou::IExpansiveDelegate
   Sphere bg_;
   Roof roof_;
   Desk desk_;
+  LauncherIcons launcher_icons_;
 };
 
 }  // namespace zennist

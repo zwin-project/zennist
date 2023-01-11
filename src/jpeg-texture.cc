@@ -1,12 +1,14 @@
 #include "jpeg-texture.h"
 
+#include <bits/types/FILE.h>
+#include <jpeglib.h>
+#include <stdio.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
 namespace zennist {
 
-JpegTexture::JpegTexture(zukou::System *system)
-    : zukou::GlTexture(system), pool_(system)
+JpegTexture::JpegTexture(zukou::System *system) : Texture(system), pool_(system)
 {}
 
 JpegTexture::~JpegTexture()
@@ -14,12 +16,6 @@ JpegTexture::~JpegTexture()
   if (fd_ != 0) {
     close(fd_);
   }
-}
-
-bool
-JpegTexture::Init()
-{
-  return zukou::GlTexture::Init();
 }
 
 bool

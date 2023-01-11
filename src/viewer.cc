@@ -6,8 +6,7 @@
 #include "gltf.vert.h"
 #include "gltf_color.frag.h"
 #include "gltf_texture.frag.h"
-#include "jpeg-texture.h"
-#include "png-texture.h"
+#include "texture-factory.h"
 
 namespace zennist {
 
@@ -180,30 +179,20 @@ Viewer::Setup()
     std::filesystem::path path = parent_dir_;
     path /= image.uri;
 
-    auto extension = ExtractExtension(image.uri);
-    if (extension == "png" || extension == "PNG") {
-      PngTexture *png_texture = new PngTexture(system_);
-
-      if (!png_texture->Init() || !png_texture->Load(path.c_str())) {
-        std::cerr << "Failed to load png texture" << std::endl;
-        return false;
-      }
-
-      texture_map_.emplace(texture.source, png_texture);
-    } else if (extension == "jpg" || extension == "JPG" ||
-               extension == "jpeg" || extension == "JPEG") {
-      JpegTexture *jpeg_texture = new JpegTexture(system_);
-
-      if (!jpeg_texture->Init() || !jpeg_texture->Load(path.c_str())) {
-        std::cerr << "Failed to load jpeg texture" << std::endl;
-        return false;
-      }
-
-      texture_map_.emplace(texture.source, jpeg_texture);
-    } else {
-      std::cerr << "TODO: Unspported image.uri extension: " << path
-                << std::endl;
+    Texture *texture_instance = TextureFactory::Create(system_, path.c_str());
+    if (texture_instance == nullptr) {
+      std::cerr << "Failed to create texture: " << path << std::endl;
+      return false;
     }
+    if (!texture_instance->Init()) {
+      std::cerr << "Failed to initialize texture: " << path << std::endl;
+      return false;
+    }
+    if (!texture_instance->Load(path.c_str())) {
+      std::cerr << "Failed to load texture: " << path << std::endl;
+      return false;
+    }
+    texture_map_.emplace(texture.source, texture_instance);
   }
 
   return true;
@@ -460,22 +449,6 @@ Viewer::CalculateLocalModel()
     value *= matrix;
   }
   return value;
-}
-
-std::string
-Viewer::ExtractExtension(std::string &filename)
-{
-  std::string extension = "";
-  for (int i = filename.size() - 2; i >= 0; --i) {
-    if (filename[i] == '.') {
-      extension = filename.substr(i + 1);
-      break;
-    }
-  }
-
-  assert(extension != "");
-
-  return extension;
 }
 
 }  // namespace zennist

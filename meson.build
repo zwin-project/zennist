@@ -30,6 +30,7 @@ glm_dep = dependency('glm')
 zukou_dep = dependency('zukou', version: zukou_req)
 jpeg_dep = dependency('libjpeg')
 png_dep = dependency('libpng')
+toml_dep = dependency('libtoml')
 
 textify = files('tools/textify.sh')[0]
 

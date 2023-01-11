@@ -1,9 +1,24 @@
 #pragma once
 
-class Texture
-{
- public:
-  bool Init();
+#include <zukou.h>
 
-  bool Load(const char *filename);
+#include <string>
+#include <vector>
+
+namespace zennist {
+
+class Texture : public zukou::GlTexture
+{
+ protected:
+  Texture(zukou::System *system) : zukou::GlTexture(system) {}
+
+ public:
+  Texture() = delete;
+  virtual ~Texture(){};
+
+  bool Init() { return zukou::GlTexture::Init(); }
+
+  virtual bool Load(const char * /*filename*/) { return false; };
 };
+
+}  // namespace zennist

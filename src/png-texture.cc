@@ -1,16 +1,16 @@
 #include "png-texture.h"
 
+#include <png.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
-#include <iostream>
 
 #define SIGNATURE_NUM 8
 
 namespace zennist {
 
-PngTexture::PngTexture(zukou::System *system)
-    : zukou::GlTexture(system), pool_(system)
+PngTexture::PngTexture(zukou::System *system) : Texture(system), pool_(system)
 {}
 
 PngTexture::~PngTexture()
@@ -18,12 +18,6 @@ PngTexture::~PngTexture()
   if (fd_ != 0) {
     close(fd_);
   }
-}
-
-bool
-PngTexture::Init()
-{
-  return zukou::GlTexture::Init();
 }
 
 bool

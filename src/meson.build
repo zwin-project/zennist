@@ -6,13 +6,18 @@ _sources = [
   'floor-edge.cc',
   'roof.cc',
   'desk.cc',
+  'launcher_icons.cc',
+  'icon.cc',
   'jpeg-texture.cc',
   'png-texture.cc',
+  'texture-factory.cc',
   'viewer.cc',
   'main.cc',
 
   shaders['landscape']['vert'],
   shaders['landscape']['frag'],
+  shaders['icon']['vert'],
+  shaders['icon']['frag'],
   shaders['color']['frag'],
   shaders['sky']['frag'],
   shaders['texture']['frag'],
@@ -28,6 +33,7 @@ _dependencies = [
   zukou_dep,
   jpeg_dep,
   png_dep,
+  toml_dep,
 ]
 
 executable(

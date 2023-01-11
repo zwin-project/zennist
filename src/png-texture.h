@@ -1,22 +1,17 @@
 #pragma once
 
-#include <png.h>
-#include <stdio.h>
-#include <string.h>
 #include <zukou.h>
 
 #include "texture.h"
 
 namespace zennist {
 
-class PngTexture final : public zukou::GlTexture, public Texture
+class PngTexture final : public Texture
 {
  public:
   DISABLE_MOVE_AND_COPY(PngTexture);
   PngTexture(zukou::System *system);
   ~PngTexture();
-
-  bool Init();
 
   bool Load(const char *filename);
 
