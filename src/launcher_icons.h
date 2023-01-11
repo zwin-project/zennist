@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "config.h"
 #include "cuboid.h"
 #include "icon.h"
 
@@ -18,9 +19,7 @@ class LauncherIcons
   LauncherIcons() = delete;
   LauncherIcons(zukou::System* system, zukou::Expansive* expansive);
 
-  bool Init(std::vector<int> icon_list);
-
-  bool Render(float radius, glm::mat4 transform);
+  bool Render(Config* config);
 
   void RayMotion(glm::vec3 origin, glm::vec3 direction);
   void RayButton(uint32_t button, bool pressed);
@@ -30,9 +29,11 @@ class LauncherIcons
   zukou::Expansive* expansive_;
   std::vector<Cuboid> cuboid_list_;
   std::vector<Icon*> icon_list_;
+  std::vector<FavoriteApp> favorite_app_list_ = {};
 
-  int cuboid_index_ = -1;
+  int focus_index_ = -1;
 
+  void Launch(FavoriteApp* app);
   float IntersectRayObb(glm::vec3 origin, glm::vec3 direction,
       glm::vec3 aabb_half_size, glm::mat4 transform);
   int IntersectAxisTest(glm::vec3 axis, glm::vec3 translation,

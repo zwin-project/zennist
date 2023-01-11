@@ -12,6 +12,7 @@ _sources = [
   'png-texture.cc',
   'texture-factory.cc',
   'viewer.cc',
+  'config.cc',
   'main.cc',
 
   shaders['landscape']['vert'],

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+#include "config.h"
 #include "desk.h"
 #include "floor-edge.h"
 #include "floor.h"
@@ -14,12 +15,10 @@
 #include "sphere.h"
 
 namespace {
-constexpr char configPath[] = "~/.config/zen-desktop/config.toml";
-
 constexpr char roofModelPath[] = ZENNIST_ASSET_DIR "/roof/zennist_roof.gltf";
-constexpr char deskModelPath[] = ZENNIST_ASSET_DIR "/desk/desk.gltf";
-// constexpr char deskModelPath[] =
-// ZENNIST_ASSET_DIR "/desk_without_icons/desk.gltf";
+// constexpr char deskModelPath[] = ZENNIST_ASSET_DIR "/desk/desk.gltf";
+constexpr char deskModelPath[] =
+    ZENNIST_ASSET_DIR "/desk_without_icons/desk.gltf";
 }  // namespace
 
 namespace zennist {
@@ -41,8 +40,9 @@ class Application final : public zukou::IExpansiveDelegate,
 {
  public:
   DISABLE_MOVE_AND_COPY(Application);
-  Application(Theme theme)
+  Application(Theme theme, Config* config)
       : theme_(theme),
+        config_(config),
         system_(this),
         space_(&system_, this),
         landscape1_(&system_, &space_),
@@ -125,7 +125,7 @@ class Application final : public zukou::IExpansiveDelegate,
                 glm::vec3(0, -0.2, 0)),
             deskModelPath))
       return false;
-    if (!launcher_icons_.Init({0, 0, 0, 0, 0, 0, 0})) return false;
+    if (!launcher_icons_.Render(config_)) return false;
 
     space_.Commit();
 
@@ -160,6 +160,7 @@ class Application final : public zukou::IExpansiveDelegate,
 
  private:
   Theme theme_;
+  Config* config_;
 
   zukou::System system_;
   zukou::Expansive space_;
@@ -182,6 +183,8 @@ class Application final : public zukou::IExpansiveDelegate,
 int
 main(int argc, char* argv[])
 {
+  zennist::Config config;
+
   auto theme = zennist::Theme::Nami;
   if (argc >= 2) {
     if (std::strcmp(argv[1], "Oka")) {
@@ -191,7 +194,13 @@ main(int argc, char* argv[])
       theme = zennist::Theme::Kumo;
     }
   }
-  zennist::Application app(theme);
+
+  if (!config.Load()) {
+    std::cerr << "Failed to load config." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  zennist::Application app(theme, &config);
 
   if (!app.Init()) return EXIT_FAILURE;
 

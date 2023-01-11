@@ -11,16 +11,11 @@
 #include "icon.vert.h"
 #include "texture-factory.h"
 
-namespace {
-constexpr char kIconTexturePath[] =
-    // ZENNIST_ASSET_DIR "/desk/Google_Chrome_icon_February_2022_svg.png";
-    ZENNIST_ASSET_DIR "/desk/blender_icon_512x512.png";
-}  // namespace
-
 namespace zennist {
 
 Icon::Icon(zukou::System* system, zukou::VirtualObject* virtual_object)
-    : virtual_object_(virtual_object),
+    : system_(system),
+      virtual_object_(virtual_object),
       pool_(system),
       gl_vertex_buffer_(system),
       gl_element_array_buffer_(system),
@@ -32,8 +27,6 @@ Icon::Icon(zukou::System* system, zukou::VirtualObject* virtual_object)
       rendering_unit_(system),
       base_technique_(system)
 {
-  icon_texture_ = TextureFactory::Create(system, kIconTexturePath);
-
   ConstructVertices();
   ConstructElements();
 }
@@ -50,9 +43,9 @@ Icon::Vertex::Vertex(float x, float y, float z, float u, float v)
 {}
 
 bool
-Icon::Render(Cuboid& cuboid)
+Icon::Render(const char* icon_texture_path, Cuboid& cuboid)
 {
-  if (!initialized_ && Init() == false) {
+  if (!initialized_ && Init(icon_texture_path) == false) {
     return false;
   }
 
@@ -65,10 +58,11 @@ Icon::Render(Cuboid& cuboid)
 }
 
 bool
-Icon::Init()
+Icon::Init(const char* icon_texture_path)
 {
+  icon_texture_ = TextureFactory::Create(system_, icon_texture_path);
   if (icon_texture_ == nullptr || !icon_texture_->Init() ||
-      !icon_texture_->Load(kIconTexturePath))
+      !icon_texture_->Load(icon_texture_path))
     return false;
 
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());

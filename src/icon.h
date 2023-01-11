@@ -24,16 +24,17 @@ class Icon
   Icon(zukou::System* system, zukou::VirtualObject* virtual_object);
   ~Icon();
 
-  bool Render(Cuboid& cuboid);
+  bool Render(const char* icon_texture_path, Cuboid& cuboid);
 
  private:
-  bool Init();
+  bool Init(const char* icon_texture_path);
 
   void ConstructVertices();
   void ConstructElements();
 
   bool initialized_ = false;
 
+  zukou::System* system_;
   zukou::VirtualObject* virtual_object_;
 
   int fd_ = 0;

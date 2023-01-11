@@ -1,5 +1,8 @@
 #include "launcher_icons.h"
 
+#include <linux/input.h>
+#include <unistd.h>
+
 #include <glm/gtx/quaternion.hpp>
 #include <iostream>
 
@@ -10,8 +13,14 @@ LauncherIcons::LauncherIcons(zukou::System* system, zukou::Expansive* expansive)
 {}
 
 bool
-LauncherIcons::Init(std::vector<int> icon_list)
+LauncherIcons::Render(Config* config)
 {
+  for (auto app : config->GetFavoriteApps()) {
+    if (app.disable_3d) continue;
+
+    favorite_app_list_.push_back(app);
+  }
+
   zukou::Region region(system_);
   if (!region.Init()) {
     std::cerr << "Failed to initialize region." << std::endl;
@@ -26,9 +35,10 @@ LauncherIcons::Init(std::vector<int> icon_list)
   float unit_theta = M_PI / 80.0;
   glm::vec3 adjust_diff(-0.006);
 
-  int start = icon_list.size() - 1;
-  for (int i = start; i >= -start; i -= 2) {
-    float theta = i * unit_theta + default_theta;
+  for (size_t i = 0; i < favorite_app_list_.size(); ++i) {
+    auto app = favorite_app_list_[i];
+    int j = favorite_app_list_.size() - 1 - 2 * i;
+    float theta = j * unit_theta + default_theta;
 
     glm::mat4 R = glm::rotate(glm::mat4(1), theta, glm::vec3(0, 1, 0)) *
                   glm::rotate(glm::mat4(1), surface_theta, glm::vec3(0, 0, 1));
@@ -43,25 +53,15 @@ LauncherIcons::Init(std::vector<int> icon_list)
         center, quaternion);
 
     cuboid_list_.push_back(cuboid);
-
     region.AddCuboid(
         cuboid.half_size + adjust_diff, cuboid.center, cuboid.quaternion);
 
     Icon* icon = new Icon(system_, expansive_);
-    icon->Render(cuboid);
     icon_list_.push_back(icon);
+    icon->Render(app.icon, cuboid);
   }
 
   expansive_->SetRegion(&region);
-
-  return true;
-}
-
-bool
-LauncherIcons::Render(float radius, glm::mat4 transform)
-{
-  (void)radius;
-  (void)transform;
 
   return true;
 }
@@ -84,15 +84,32 @@ LauncherIcons::RayMotion(glm::vec3 origin, glm::vec3 direction)
     i++;
   }
 
-  cuboid_index_ = min_i;
+  focus_index_ = min_i;
 }
 
 void
 LauncherIcons::RayButton(uint32_t button, bool pressed)
 {
-  (void)button;
-  (void)pressed;
-  if (cuboid_index_ != -1 && !pressed) std::cout << cuboid_index_ << std::endl;
+  if (focus_index_ != -1 && button == BTN_LEFT && !pressed) {
+    auto app = favorite_app_list_[focus_index_];
+    Launch(&app);
+  }
+}
+
+void
+LauncherIcons::Launch(FavoriteApp* app)
+{
+  pid_t pid = -1;
+
+  pid = fork();
+  if (pid == -1) {
+    std::cerr << "Failed to fork the command process: " << strerror(errno)
+              << std::endl;
+  } else if (pid == 0) {
+    execl("/bin/sh", "/bin/sh", "-c", app->exec, NULL);
+    std::cerr << "Failed to execute the command (" << app->exec
+              << "): " << strerror(errno) << std::endl;
+  }
 }
 
 float
