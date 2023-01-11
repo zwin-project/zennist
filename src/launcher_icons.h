@@ -6,9 +6,11 @@
 
 #include "config.h"
 #include "cuboid.h"
+#include "icon-background.h"
 #include "icon.h"
 
 #define ICON_REGION_HALF_SIZE 0.025
+#define ICON_REGION_THICKNESS_SIZE 0.00005
 
 namespace zennist {
 
@@ -21,14 +23,16 @@ class LauncherIcons
 
   bool Render(Config* config);
 
+  void RayLeave();
   void RayMotion(glm::vec3 origin, glm::vec3 direction);
   void RayButton(uint32_t button, bool pressed);
 
  private:
   zukou::System* system_;
   zukou::Expansive* expansive_;
-  std::vector<Cuboid> cuboid_list_;
-  std::vector<Icon*> icon_list_;
+  std::vector<Cuboid> cuboid_list_ = {};
+  std::vector<Icon*> icon_list_ = {};
+  std::vector<IconBackground*> icon_background_list_ = {};
   std::vector<FavoriteApp> favorite_app_list_ = {};
 
   int focus_index_ = -1;

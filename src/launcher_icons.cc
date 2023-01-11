@@ -46,24 +46,44 @@ LauncherIcons::Render(Config* config)
 
     float x = radius * cos(theta);
     float z = -radius * sin(theta);
-    glm::vec3 center = {x, desk_height, z};
+    // glm::vec3 center = {x, desk_height, z};
 
-    Cuboid cuboid(
-        glm::vec3(0.00005, ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE),
-        center, quaternion);
+    Cuboid region_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
+                             ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE) +
+                             adjust_diff,
+        {x, desk_height, z}, quaternion);
+    Cuboid icon_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
+                           ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE) +
+                           adjust_diff,
+        {x, desk_height, z}, quaternion);
+    Cuboid icon_background_cuboid(
+        glm::vec3(ICON_REGION_THICKNESS_SIZE, ICON_REGION_HALF_SIZE,
+            ICON_REGION_HALF_SIZE),
 
-    cuboid_list_.push_back(cuboid);
-    region.AddCuboid(
-        cuboid.half_size + adjust_diff, cuboid.center, cuboid.quaternion);
+        {x, desk_height - 0.002, z}, quaternion);
+
+    cuboid_list_.push_back(icon_cuboid);
+    region.AddCuboid(region_cuboid.half_size, region_cuboid.center,
+        region_cuboid.quaternion);
+
+    IconBackground* icon_background = new IconBackground(system_, expansive_);
+    icon_background->Init(icon_background_cuboid);
+    icon_background_list_.push_back(icon_background);
 
     Icon* icon = new Icon(system_, expansive_);
     icon_list_.push_back(icon);
-    icon->Render(app.icon, cuboid);
+    icon->Render(app.icon, icon_cuboid);
   }
 
   expansive_->SetRegion(&region);
 
   return true;
+}
+
+void
+LauncherIcons::RayLeave()
+{
+  for (auto icon_background : icon_background_list_) icon_background->Hide();
 }
 
 void
@@ -85,6 +105,10 @@ LauncherIcons::RayMotion(glm::vec3 origin, glm::vec3 direction)
   }
 
   focus_index_ = min_i;
+
+  for (int j = 0; j < (int)icon_background_list_.size(); ++j)
+    if (focus_index_ != j) icon_background_list_[j]->Hide();
+  if (focus_index_ != -1) icon_background_list_[focus_index_]->Show();
 }
 
 void

@@ -22,7 +22,8 @@ jobs:
           sudo apt-get update &&
           sudo apt-get install \
             libwayland-dev wayland-protocols libglm-dev libgles-dev \
-            libjpeg-dev meson
+            libjpeg-dev librsvg2-dev \
+            meson
 
       - name: Clone tomlc99
         uses: actions/checkout@v2

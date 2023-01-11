@@ -142,7 +142,9 @@ class Application final : public zukou::IExpansiveDelegate,
 
   void RayLeave(
       uint32_t /*serial*/, zukou::VirtualObject* /*virtual_object*/) override
-  {}
+  {
+    launcher_icons_.RayLeave();
+  }
 
   void RayMotion(
       uint32_t /*time*/, glm::vec3 origin, glm::vec3 direction) override

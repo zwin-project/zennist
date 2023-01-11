@@ -7,9 +7,11 @@ _sources = [
   'roof.cc',
   'desk.cc',
   'launcher_icons.cc',
+  'icon-background.cc',
   'icon.cc',
   'jpeg-texture.cc',
   'png-texture.cc',
+  'svg-texture.cc',
   'texture-factory.cc',
   'viewer.cc',
   'config.cc',
@@ -32,8 +34,10 @@ _sources = [
 
 _dependencies = [
   zukou_dep,
+  cairo_dep,
   jpeg_dep,
   png_dep,
+  rsvg_dep,
   toml_dep,
 ]
 

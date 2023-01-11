@@ -10,10 +10,8 @@
 #include "floor.frag.h"
 
 namespace {
-
 constexpr char kFloorTexturePath[] =
     ZENNIST_ASSET_DIR "/dark+chevron+parquet-512x512.jpeg";
-
 }  // namespace
 
 namespace zennist {

@@ -5,6 +5,7 @@
 
 #include "jpeg-texture.h"
 #include "png-texture.h"
+#include "svg-texture.h"
 
 namespace {
 std::vector<std::string> kJpegExtensionList = {"jpg", "jpeg"};
@@ -25,7 +26,7 @@ TextureFactory::Create(zukou::System *system, const char *filename)
   else if (MatchAny(extension, kPngExtensionList))
     texture = new PngTexture(system);
   else if (MatchAny(extension, kSvgExtensionList))
-    texture = nullptr;  // SvgTexture;
+    texture = new SvgTexture(system);
 
   return texture;
 }
