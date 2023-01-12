@@ -137,7 +137,6 @@ Icon::ConstructVertices()
     for (float y = -0.5; y <= 0.5; y += 1.0) {
       for (float z = -0.5; z <= 0.5; z += 1.0) {
         vertices_.emplace_back(x, y, z, z + 0.5, 0.5 - y);
-        // vertices_.emplace_back(x, y, z, y + 0.5, z + 0.5);
       }
     }
   }

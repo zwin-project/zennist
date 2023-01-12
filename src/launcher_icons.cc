@@ -3,8 +3,11 @@
 #include <linux/input.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <glm/gtx/quaternion.hpp>
 #include <iostream>
+
+#include "viewer.h"
 
 namespace zennist {
 
@@ -27,10 +30,10 @@ LauncherIcons::Render(Config* config)
     return false;
   }
 
-  float radius = 0.63;
+  float radius = 0.635;
   float desk_height = 0.64;
   float default_theta = M_PI / 2.0;
-  float surface_theta = -M_PI / 4.0;
+  float surface_theta = -M_PI / 3.5;
 
   float unit_theta = M_PI / 80.0;
   glm::vec3 adjust_diff(-0.006);
@@ -46,33 +49,58 @@ LauncherIcons::Render(Config* config)
 
     float x = radius * cos(theta);
     float z = -radius * sin(theta);
-    // glm::vec3 center = {x, desk_height, z};
 
-    Cuboid region_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
+    {
+      Cuboid region_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
+                               ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE) +
+                               adjust_diff,
+          {x, desk_height, z}, quaternion);
+      region.AddCuboid(region_cuboid.half_size, region_cuboid.center,
+          region_cuboid.quaternion);
+    }
+
+    {
+      float xi = (radius + 0.003) * cos(theta);
+      float zi = -(radius + 0.003) * sin(theta);
+
+      Cuboid icon_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
                              ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE) +
                              adjust_diff,
-        {x, desk_height, z}, quaternion);
-    Cuboid icon_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
-                           ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE) +
-                           adjust_diff,
-        {x, desk_height, z}, quaternion);
-    Cuboid icon_background_cuboid(
-        glm::vec3(ICON_REGION_THICKNESS_SIZE, ICON_REGION_HALF_SIZE,
-            ICON_REGION_HALF_SIZE),
+          {xi, desk_height - 0.005, zi}, quaternion);
 
-        {x, desk_height - 0.002, z}, quaternion);
+      if (ExtractExtensionAsLower(app.icon) == "gltf") {
+        Viewer* viewer = new Viewer(system_, expansive_);
+        glm::mat4 transform(1);
+        transform *= glm::translate(transform,
+                         {(radius - 0.01) * cos(theta), desk_height + 0.002,
+                             -(radius - 0.01) * sin(theta)}) *
+                     glm::rotate(glm::mat4(1), theta, glm::vec3(0, 1, 0));
+        if (!viewer->Render(
+                ICON_REGION_HALF_SIZE - 0.005, transform, app.icon)) {
+          std::cerr << "Failed to render gltf icon: " << app.icon << std::endl;
+        }
+      } else {
+        Icon* icon = new Icon(system_, expansive_);
 
-    cuboid_list_.push_back(icon_cuboid);
-    region.AddCuboid(region_cuboid.half_size, region_cuboid.center,
-        region_cuboid.quaternion);
+        icon_list_.push_back(icon);
+        icon->Render(app.icon, icon_cuboid);
+      }
+      cuboid_list_.push_back(icon_cuboid);
+    }
 
-    IconBackground* icon_background = new IconBackground(system_, expansive_);
-    icon_background->Init(icon_background_cuboid);
-    icon_background_list_.push_back(icon_background);
+    {
+      float xj = (radius + 0.001) * cos(theta);
+      float zj = -(radius + 0.001) * sin(theta);
+      Cuboid icon_background_cuboid(
+          glm::vec3(ICON_REGION_THICKNESS_SIZE, ICON_REGION_HALF_SIZE,
+              ICON_REGION_HALF_SIZE),
 
-    Icon* icon = new Icon(system_, expansive_);
-    icon_list_.push_back(icon);
-    icon->Render(app.icon, icon_cuboid);
+          {xj, desk_height - 0.003, zj}, quaternion);
+      IconBackground* icon_background = new IconBackground(system_, expansive_);
+
+      icon_background->Init(icon_background_cuboid);
+      icon_background_list_.push_back(icon_background);
+    }
   }
 
   expansive_->SetRegion(&region);
@@ -175,6 +203,25 @@ LauncherIcons::IntersectAxisTest(glm::vec3 axis, glm::vec3 translation,
     if (-e + axis_min > 0.0f || -e + axis_max < 0.0f) return -1;
   }
   return 0;
+}
+
+std::string
+LauncherIcons::ExtractExtensionAsLower(const char* filename)
+{
+  std::string extension("");
+  std::string name(filename);
+
+  for (int i = name.size() - 2; i >= 0; --i) {
+    if (filename[i] == '.') {
+      extension = name.substr(i + 1);
+      break;
+    }
+  }
+
+  std::transform(extension.begin(), extension.end(), extension.begin(),
+      [](unsigned char c) { return std::tolower(c); });
+
+  return extension;
 }
 
 }  // namespace zennist

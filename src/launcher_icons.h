@@ -10,7 +10,7 @@
 #include "icon.h"
 
 #define ICON_REGION_HALF_SIZE 0.025
-#define ICON_REGION_THICKNESS_SIZE 0.00005
+#define ICON_REGION_THICKNESS_SIZE 0.0
 
 namespace zennist {
 
@@ -43,6 +43,7 @@ class LauncherIcons
   int IntersectAxisTest(glm::vec3 axis, glm::vec3 translation,
       glm::vec3 ray_direction, float axis_min, float axis_max, float* t_min,
       float* t_max);
+  std::string ExtractExtensionAsLower(const char* filename);
 };
 
 }  // namespace zennist
