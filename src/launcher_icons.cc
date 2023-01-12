@@ -92,8 +92,8 @@ LauncherIcons::Render(Config* config)
       float xj = (radius + 0.001) * cos(theta);
       float zj = -(radius + 0.001) * sin(theta);
       Cuboid icon_background_cuboid(
-          glm::vec3(ICON_REGION_THICKNESS_SIZE, ICON_REGION_HALF_SIZE,
-              ICON_REGION_HALF_SIZE),
+          glm::vec3(ICON_REGION_THICKNESS_SIZE, ICON_REGION_HALF_SIZE + 0.005,
+              ICON_REGION_HALF_SIZE + 0.005),
 
           {xj, desk_height - 0.003, zj}, quaternion);
       IconBackground* icon_background = new IconBackground(system_, expansive_);

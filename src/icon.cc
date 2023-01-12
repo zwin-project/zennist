@@ -133,13 +133,14 @@ Icon::Init(const char* icon_texture_path)
 void
 Icon::ConstructVertices()
 {
-  for (float x = -0.5; x <= 0.5; x += 1.0) {
-    for (float y = -0.5; y <= 0.5; y += 1.0) {
-      for (float z = -0.5; z <= 0.5; z += 1.0) {
-        vertices_.emplace_back(x, y, z, z + 0.5, 0.5 - y);
-      }
+  float x = 0.5;
+  // for (float x = -0.5; x <= 0.5; x += 1.0) {
+  for (float y = -0.5; y <= 0.5; y += 1.0) {
+    for (float z = -0.5; z <= 0.5; z += 1.0) {
+      vertices_.emplace_back(x, y, z, z + 0.5, 0.5 - y);
     }
   }
+  // }
 }
 
 void
@@ -148,16 +149,16 @@ Icon::ConstructElements()
   std::vector<ushort> values = {
       0, 1, 2,  //
       1, 2, 3,  //
-      4, 5, 6,  //
-      5, 6, 7,  //
-      0, 1, 4,  //
-      1, 4, 5,  //
-      2, 3, 6,  //
-      3, 6, 7,  //
-      0, 2, 6,  //
-      0, 4, 6,  //
-      1, 3, 7,  //
-      1, 5, 7,  //
+                // 4, 5, 6,  //
+                // 5, 6, 7,  //
+                // 0, 1, 4,  //
+                // 1, 4, 5,  //
+                // 2, 3, 6,  //
+                // 3, 6, 7,  //
+                // 0, 2, 6,  //
+                // 0, 4, 6,  //
+                // 1, 3, 7,  //
+                // 1, 5, 7,  //
   };
 
   elements_.swap(values);
