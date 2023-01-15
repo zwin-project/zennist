@@ -1,6 +1,6 @@
 project(
   'zennist', 'c', 'cpp',
-  version: '0.0.1',
+  version: '0.1.0',
   license: 'MIT',
   meson_version: '>= 0.58.0',
   default_options: ['warning_level=3', 'werror=true', 'optimization=2', 'c_std=gnu11', 'cpp_std=gnu++17'],
@@ -25,7 +25,7 @@ add_project_arguments(global_args, language: 'cpp')
 
 datadir = get_option('datadir')
 
-zukou_req = '0.0.3'
+zukou_req = '0.1.0'
 
 glm_dep = dependency('glm')
 zukou_dep = dependency('zukou', version: zukou_req)
@@ -33,7 +33,6 @@ cairo_dep = dependency('cairo')
 jpeg_dep = dependency('libjpeg')
 png_dep = dependency('libpng')
 rsvg_dep = dependency('librsvg-2.0')
-toml_dep = dependency('libtoml')
 
 textify = files('tools/textify.sh')[0]
 
@@ -47,5 +46,6 @@ configure_file(
   configuration: cdata,
 )
 
+subdir('3rd-party')
 subdir('shaders')
 subdir('src')
