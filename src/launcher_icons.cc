@@ -47,10 +47,9 @@ LauncherIcons::Render(Config* config)
                   glm::rotate(glm::mat4(1), surface_theta, glm::vec3(0, 0, 1));
     glm::quat quaternion = glm::toQuat(R);
 
-    float x = radius * cos(theta);
-    float z = -radius * sin(theta);
-
     {
+      float x = radius * cos(theta);
+      float z = -radius * sin(theta);
       Cuboid region_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
                                ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE) +
                                adjust_diff,
@@ -60,13 +59,12 @@ LauncherIcons::Render(Config* config)
     }
 
     {
-      float xi = (radius + 0.003) * cos(theta);
-      float zi = -(radius + 0.003) * sin(theta);
-
+      float x = (radius + 0.003) * cos(theta);
+      float z = -(radius + 0.003) * sin(theta);
       Cuboid icon_cuboid(glm::vec3(ICON_REGION_THICKNESS_SIZE,
                              ICON_REGION_HALF_SIZE, ICON_REGION_HALF_SIZE) +
                              adjust_diff,
-          {xi, desk_height - 0.005, zi}, quaternion);
+          {x, desk_height - 0.005, z}, quaternion);
 
       if (ExtractExtensionAsLower(app.icon) == "gltf") {
         Viewer* viewer = new Viewer(system_, expansive_);
@@ -89,13 +87,12 @@ LauncherIcons::Render(Config* config)
     }
 
     {
-      float xj = (radius + 0.001) * cos(theta);
-      float zj = -(radius + 0.001) * sin(theta);
+      float x = (radius + 0.001) * cos(theta);
+      float z = -(radius + 0.001) * sin(theta);
       Cuboid icon_background_cuboid(
           glm::vec3(ICON_REGION_THICKNESS_SIZE, ICON_REGION_HALF_SIZE + 0.005,
               ICON_REGION_HALF_SIZE + 0.005),
-
-          {xj, desk_height - 0.003, zj}, quaternion);
+          {x, desk_height - 0.003, z}, quaternion);
       IconBackground* icon_background = new IconBackground(system_, expansive_);
 
       icon_background->Init(icon_background_cuboid);
