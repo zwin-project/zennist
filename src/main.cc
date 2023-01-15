@@ -16,9 +16,7 @@
 
 namespace {
 constexpr char roofModelPath[] = ZENNIST_ASSET_DIR "/roof/zennist_roof.gltf";
-// constexpr char deskModelPath[] = ZENNIST_ASSET_DIR "/desk/desk.gltf";
-constexpr char deskModelPath[] =
-    ZENNIST_ASSET_DIR "/desk_without_icons/desk.gltf";
+constexpr char deskModelPath[] = ZENNIST_ASSET_DIR "/desk/desk.gltf";
 }  // namespace
 
 namespace zennist {

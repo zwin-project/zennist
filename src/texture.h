@@ -18,7 +18,7 @@ class Texture : public zukou::GlTexture
 
   bool Init() { return zukou::GlTexture::Init(); }
 
-  virtual bool Load(const char * /*filename*/) { return false; };
+  virtual bool Load() { return false; };
 };
 
 }  // namespace zennist

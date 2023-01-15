@@ -8,6 +8,7 @@
 
 #include "default.vert.h"
 #include "floor.frag.h"
+#include "texture-factory.h"
 
 namespace {
 constexpr char kFloorTexturePath[] =
@@ -18,7 +19,8 @@ namespace zennist {
 
 Floor::Floor(
     zukou::System* system, zukou::VirtualObject* virtual_object, float radius)
-    : virtual_object_(virtual_object),
+    : system_(system),
+      virtual_object_(virtual_object),
       radius_(radius),
       pool_(system),
       gl_vertex_buffer_(system),
@@ -28,7 +30,6 @@ Floor::Floor(
       fragment_shader_(system),
       program_(system),
       sampler_(system),
-      texture_(system),
       rendering_unit_(system),
       base_technique_(system)
 {
@@ -80,7 +81,8 @@ Floor::Init()
     return false;
   if (!program_.Init()) return false;
 
-  if (!texture_.Init() || !texture_.Load(kFloorTexturePath)) return false;
+  texture_ = TextureFactory::Create(system_, kFloorTexturePath);
+  if (!texture_->Init() || !texture_->Load()) return false;
   if (!sampler_.Init()) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
@@ -116,10 +118,10 @@ Floor::Init()
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  texture_.GenerateMipmap(GL_TEXTURE_2D);
+  texture_->GenerateMipmap(GL_TEXTURE_2D);
   sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  base_technique_.Bind(0, "floor_texture", &texture_, GL_TEXTURE_2D, &sampler_);
+  base_technique_.Bind(0, "floor_texture", texture_, GL_TEXTURE_2D, &sampler_);
 
   base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
       GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);

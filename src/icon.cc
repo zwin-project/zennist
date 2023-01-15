@@ -11,6 +11,10 @@
 #include "icon.vert.h"
 #include "texture-factory.h"
 
+namespace {
+constexpr char kDefaultIconPath[] = ZENNIST_ASSET_DIR "/icon/noicon.png";
+}  // namespace
+
 namespace zennist {
 
 Icon::Icon(zukou::System* system, zukou::VirtualObject* virtual_object)
@@ -62,8 +66,15 @@ Icon::Init(const char* icon_texture_path)
 {
   icon_texture_ = TextureFactory::Create(system_, icon_texture_path);
   if (icon_texture_ == nullptr || !icon_texture_->Init() ||
-      !icon_texture_->Load(icon_texture_path))
-    return false;
+      !icon_texture_->Load()) {
+    delete icon_texture_;
+    icon_texture_ = nullptr;
+
+    icon_texture_ = TextureFactory::Create(system_, kDefaultIconPath);
+    if (icon_texture_ == nullptr || !icon_texture_->Init() ||
+        !icon_texture_->Load())
+      return false;
+  }
 
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());
   if (!pool_.Init(fd_, pool_size())) return false;
@@ -134,13 +145,11 @@ void
 Icon::ConstructVertices()
 {
   float x = 0.5;
-  // for (float x = -0.5; x <= 0.5; x += 1.0) {
   for (float y = -0.5; y <= 0.5; y += 1.0) {
     for (float z = -0.5; z <= 0.5; z += 1.0) {
       vertices_.emplace_back(x, y, z, z + 0.5, 0.5 - y);
     }
   }
-  // }
 }
 
 void
@@ -149,16 +158,6 @@ Icon::ConstructElements()
   std::vector<ushort> values = {
       0, 1, 2,  //
       1, 2, 3,  //
-                // 4, 5, 6,  //
-                // 5, 6, 7,  //
-                // 0, 1, 4,  //
-                // 1, 4, 5,  //
-                // 2, 3, 6,  //
-                // 3, 6, 7,  //
-                // 0, 2, 6,  //
-                // 0, 4, 6,  //
-                // 1, 3, 7,  //
-                // 1, 5, 7,  //
   };
 
   elements_.swap(values);

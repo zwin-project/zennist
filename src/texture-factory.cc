@@ -22,11 +22,11 @@ TextureFactory::Create(zukou::System *system, const char *filename)
 
   auto extension = ExtractExtensionAsLower(filename);
   if (MatchAny(extension, kJpegExtensionList))
-    texture = new JpegTexture(system);
+    texture = new JpegTexture(system, filename);
   else if (MatchAny(extension, kPngExtensionList))
-    texture = new PngTexture(system);
+    texture = new PngTexture(system, filename);
   else if (MatchAny(extension, kSvgExtensionList))
-    texture = new SvgTexture(system);
+    texture = new SvgTexture(system, filename);
 
   return texture;
 }

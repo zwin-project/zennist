@@ -25,7 +25,7 @@ Config::Load()
     return true;
   }
 
-  toml_array_t *favorite_apps = toml_array_in(config_table, "favorite-apps");
+  toml_array_t *favorite_apps = toml_array_in(config_table, "favorite_apps");
   if (favorite_apps != nullptr) {
     table_.favorite_apps.resize(toml_array_nelem(favorite_apps));
     for (size_t i = 0; i < table_.favorite_apps.size(); i++) {
@@ -41,7 +41,7 @@ Config::Load()
       if (exec.ok && strlen(exec.u.s) != 0) {
         table_.favorite_apps[i].exec = exec.u.s;
       } else {
-        std::cerr << "Required config key not specified: favorite-apps:exec"
+        std::cerr << "Required config key not specified: favorite_apps:exec"
                   << std::endl;
         return false;
       }
@@ -50,9 +50,10 @@ Config::Load()
       if (icon.ok && strlen(icon.u.s) != 0) {
         table_.favorite_apps[i].icon = icon.u.s;
       } else {
-        std::cerr << "Required config key not specified: favorite-apps:icon"
+        char empty_icon[] = "";
+        table_.favorite_apps[i].icon = empty_icon;
+        std::cerr << "Required config key not specified: favorite_apps:icon"
                   << std::endl;
-        return false;
       }
 
       toml_datum_t disable_2d = toml_bool_in(favorite_app, "disable_2d");

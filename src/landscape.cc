@@ -1,6 +1,7 @@
 #include "landscape.h"
 
 #include <sys/mman.h>
+#include <texture-factory.h>
 #include <unistd.h>
 
 #include <cstring>
@@ -13,7 +14,8 @@ namespace zennist {
 Landscape::Landscape(zukou::System* system,
     zukou::VirtualObject* virtual_object, float length, uint32_t count_x,
     uint32_t count_z)
-    : virtual_object_(virtual_object),
+    : system_(system),
+      virtual_object_(virtual_object),
       length_(length),
       count_x_(count_x),
       count_z_(count_z),
@@ -25,7 +27,6 @@ Landscape::Landscape(zukou::System* system,
       fragment_shader_(system),
       program_(system),
       sampler_(system),
-      texture_(system),
       rendering_unit_(system),
       base_technique_(system)
 {}
@@ -75,7 +76,8 @@ Landscape::Init(const char* texturePath, float repeat)
     return false;
   if (!program_.Init()) return false;
 
-  if (!texture_.Init() || !texture_.Load(texturePath)) return false;
+  texture_ = TextureFactory::Create(system_, texturePath);
+  if (!texture_->Init() || !texture_->Load()) return false;
   if (!sampler_.Init()) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
@@ -111,10 +113,10 @@ Landscape::Init(const char* texturePath, float repeat)
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  texture_.GenerateMipmap(GL_TEXTURE_2D);
+  texture_->GenerateMipmap(GL_TEXTURE_2D);
   sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  base_technique_.Bind(0, "floor_texture", &texture_, GL_TEXTURE_2D, &sampler_);
+  base_technique_.Bind(0, "floor_texture", texture_, GL_TEXTURE_2D, &sampler_);
 
   base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
       GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);

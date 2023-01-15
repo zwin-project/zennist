@@ -13,7 +13,7 @@
 
 namespace {
 constexpr char kIconBackgroundTexturePath[] =
-    ZENNIST_ASSET_DIR "/rounded_rectangle.svg";
+    ZENNIST_ASSET_DIR "/icon/rounded_rectangle.svg";
 }  // namespace
 
 namespace zennist {
@@ -92,7 +92,7 @@ IconBackground::Setup()
 {
   icon_texture_ = TextureFactory::Create(system_, kIconBackgroundTexturePath);
   if (icon_texture_ == nullptr || !icon_texture_->Init() ||
-      !icon_texture_->Load(kIconBackgroundTexturePath))
+      !icon_texture_->Load())
     return false;
 
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());
@@ -164,7 +164,6 @@ IconBackground::ConstructVertices()
     for (float y = -0.5; y <= 0.5; y += 1.0) {
       for (float z = -0.5; z <= 0.5; z += 1.0) {
         vertices_.emplace_back(x, y, z, z + 0.5, 0.5 - y);
-        // vertices_.emplace_back(x, y, z, y + 0.5, z + 0.5);
       }
     }
   }

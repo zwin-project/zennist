@@ -67,7 +67,7 @@
 
 #include <vector>
 
-#include "jpeg-texture.h"
+#include "texture.h"
 
 namespace zennist {
 
@@ -100,6 +100,7 @@ class Sphere
 
   bool initialized_ = false;
 
+  zukou::System* system_;
   zukou::VirtualObject* virtual_object_;
 
   const int32_t resolution_;
@@ -116,7 +117,7 @@ class Sphere
   zukou::GlShader fragment_shader_;
   zukou::GlProgram program_;
   zukou::GlSampler sampler_;
-  JpegTexture texture_;
+  Texture* texture_;
 
   zukou::RenderingUnit rendering_unit_;
   zukou::GlBaseTechnique base_technique_;

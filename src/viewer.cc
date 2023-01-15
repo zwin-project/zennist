@@ -188,7 +188,7 @@ Viewer::Setup()
       std::cerr << "Failed to initialize texture: " << path << std::endl;
       return false;
     }
-    if (!texture_instance->Load(path.c_str())) {
+    if (!texture_instance->Load()) {
       std::cerr << "Failed to load texture: " << path << std::endl;
       return false;
     }

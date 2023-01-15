@@ -10,7 +10,8 @@
 
 namespace zennist {
 
-PngTexture::PngTexture(zukou::System *system) : Texture(system), pool_(system)
+PngTexture::PngTexture(zukou::System *system, const char *texture_path)
+    : Texture(system), pool_(system), texture_path_(texture_path)
 {}
 
 PngTexture::~PngTexture()
@@ -21,7 +22,7 @@ PngTexture::~PngTexture()
 }
 
 bool
-PngTexture::Load(const char *texture_path)
+PngTexture::Load()
 {
   FILE *fp = nullptr;
   uint32_t width, height;
@@ -43,9 +44,9 @@ PngTexture::Load(const char *texture_path)
     goto err;
   }
 
-  fp = fopen(texture_path, "rb");
+  fp = fopen(texture_path_, "rb");
   if (!fp) {
-    fprintf(stderr, "Fail to open file: %s\n", texture_path);
+    fprintf(stderr, "Fail to open file: %s\n", texture_path_);
     goto error_open_file;
   }
 

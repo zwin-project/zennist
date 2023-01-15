@@ -14,7 +14,8 @@
 
 namespace zennist {
 
-SvgTexture::SvgTexture(zukou::System *system) : Texture(system), pool_(system)
+SvgTexture::SvgTexture(zukou::System *system, const char *texture_path)
+    : Texture(system), pool_(system), texture_path_(texture_path)
 {}
 
 SvgTexture::~SvgTexture()
@@ -25,7 +26,7 @@ SvgTexture::~SvgTexture()
 }
 
 bool
-SvgTexture::Load(const char *texture_path)
+SvgTexture::Load()
 {
   int channel = 4;
   uint32_t width = 400;
@@ -50,7 +51,7 @@ SvgTexture::Load(const char *texture_path)
   cairo_paint(cr);
 
   GError *error = NULL;
-  GFile *file = g_file_new_for_path(texture_path);
+  GFile *file = g_file_new_for_path(texture_path_);
   RsvgHandle *handle = rsvg_handle_new_from_gfile_sync(
       file, RSVG_HANDLE_FLAGS_NONE, NULL, &error);
   if (handle == NULL) {

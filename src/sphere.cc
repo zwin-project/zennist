@@ -9,12 +9,14 @@
 #include "color.frag.h"
 #include "default.vert.h"
 #include "sky.frag.h"
+#include "texture-factory.h"
 
 namespace zennist {
 
 Sphere::Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,
     int32_t resolution)
-    : virtual_object_(virtual_object),
+    : system_(system),
+      virtual_object_(virtual_object),
       resolution_(resolution),
       pool_(system),
       gl_vertex_buffer_(system),
@@ -24,7 +26,6 @@ Sphere::Sphere(zukou::System* system, zukou::VirtualObject* virtual_object,
       fragment_shader_(system),
       program_(system),
       sampler_(system),
-      texture_(system),
       rendering_unit_(system),
       base_technique_(system)
 {}
@@ -78,7 +79,9 @@ Sphere::Init(const char* texturePath)
   if (!program_.Init()) return false;
 
   if (!sampler_.Init()) return false;
-  if (!texture_.Init() || !texture_.Load(texturePath)) return false;
+
+  texture_ = TextureFactory::Create(system_, texturePath);
+  if (!texture_->Init() || !texture_->Load()) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
   if (!base_technique_.Init(&rendering_unit_)) return false;
@@ -115,7 +118,7 @@ Sphere::Init(const char* texturePath)
 
   sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  base_technique_.Bind(0, "sky_texture", &texture_, GL_TEXTURE_2D, &sampler_);
+  base_technique_.Bind(0, "sky_texture", texture_, GL_TEXTURE_2D, &sampler_);
 
   base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
       GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
@@ -152,33 +155,9 @@ Sphere::ConstructElements()
       ushort num_vertices_in_a_latitudinal_line = (4 * resolution_ + 1);
       ushort A = n * num_vertices_in_a_latitudinal_line + j;
       ushort B = A + 1;
-      // ushort C = A - num_vertices_in_a_latitudinal_line;
       ushort D = B - num_vertices_in_a_latitudinal_line;
       ushort E = A + num_vertices_in_a_latitudinal_line;
-      // ushort F = B + num_vertices_in_a_latitudinal_line;
 
-      // if (wire_) {
-      //   elements_.push_back(A);
-      //   elements_.push_back(B);
-
-      //   elements_.push_back(C);
-      //   elements_.push_back(D);
-
-      //   elements_.push_back(E);
-      //   elements_.push_back(F);
-
-      //   elements_.push_back(A);
-      //   elements_.push_back(C);
-
-      //   elements_.push_back(A);
-      //   elements_.push_back(E);
-
-      //   elements_.push_back(B);
-      //   elements_.push_back(D);
-
-      //   elements_.push_back(B);
-      //   elements_.push_back(F);
-      // } else {
       elements_.push_back(A);
       elements_.push_back(E);
       elements_.push_back(B);
