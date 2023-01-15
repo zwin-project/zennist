@@ -11,7 +11,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/vec3.hpp>
-#include <iostream>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -41,7 +40,6 @@ class Viewer : public zukou::IBoundedDelegate, public zukou::ISystemDelegate
 
   void SetInitialPosition(float radius, glm::mat4 transform);
   glm::mat4 CalculateLocalModel();
-  std::string ExtractExtension(std::string &filename);
 
   tinygltf::Model *model_;
   std::filesystem::path parent_dir_;

@@ -5,6 +5,7 @@ _shaders = {
   'default': ['vert'],
   'sky': ['frag'],
   'floor': ['frag', 'vert'],
+  'icon': ['frag', 'vert'],
   'gltf': ['vert'],
   'gltf_color': ['frag'],
   'gltf_texture': ['frag'],

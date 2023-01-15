@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include <cstring>
-#include <iostream>
 
 #include "color.frag.h"
 #include "default.vert.h"

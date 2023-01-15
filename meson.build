@@ -13,6 +13,7 @@ global_args = []
 global_args_maybe = [
   '-D_GNU_SOURCE',
   '-fvisibility=hidden',
+  '-Wno-gnu-zero-variadic-macro-arguments',
 ]
 
 foreach arg : global_args_maybe
@@ -28,8 +29,11 @@ zukou_req = '0.0.3'
 
 glm_dep = dependency('glm')
 zukou_dep = dependency('zukou', version: zukou_req)
+cairo_dep = dependency('cairo')
 jpeg_dep = dependency('libjpeg')
 png_dep = dependency('libpng')
+rsvg_dep = dependency('librsvg-2.0')
+toml_dep = dependency('libtoml')
 
 textify = files('tools/textify.sh')[0]
 

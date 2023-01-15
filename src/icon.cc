@@ -1,26 +1,24 @@
-#include "floor.h"
+#include "icon.h"
 
 #include <sys/mman.h>
 #include <unistd.h>
 
 #include <cstring>
+#include <glm/gtx/quaternion.hpp>
 
-#include "default.vert.h"
-#include "floor.frag.h"
+#include "icon.frag.h"
+#include "icon.vert.h"
 #include "texture-factory.h"
 
 namespace {
-constexpr char kFloorTexturePath[] =
-    ZENNIST_ASSET_DIR "/dark+chevron+parquet-512x512.jpeg";
+constexpr char kDefaultIconPath[] = ZENNIST_ASSET_DIR "/icon/noicon.png";
 }  // namespace
 
 namespace zennist {
 
-Floor::Floor(
-    zukou::System* system, zukou::VirtualObject* virtual_object, float radius)
+Icon::Icon(zukou::System* system, zukou::VirtualObject* virtual_object)
     : system_(system),
       virtual_object_(virtual_object),
-      radius_(radius),
       pool_(system),
       gl_vertex_buffer_(system),
       gl_element_array_buffer_(system),
@@ -32,38 +30,51 @@ Floor::Floor(
       rendering_unit_(system),
       base_technique_(system)
 {
-  const static int resolution = 64;
-  const static int radial_resolution = 10;
-  ConstructVertices(resolution, radial_resolution);
-  ConstructElements(resolution, radial_resolution);
+  ConstructVertices();
+  ConstructElements();
 }
 
-Floor::~Floor()
+Icon::~Icon()
 {
   if (fd_ != 0) {
     close(fd_);
   }
 }
 
-Floor::Vertex::Vertex(float x, float y, float z, float u, float v)
+Icon::Vertex::Vertex(float x, float y, float z, float u, float v)
     : x(x), y(y), z(z), u(u), v(v)
 {}
 
 bool
-Floor::Render(float radius, glm::mat4 transform)
+Icon::Render(const char* icon_texture_path, Cuboid& cuboid)
 {
-  if (!initialized_ && Init() == false) {
+  if (!initialized_ && Init(icon_texture_path) == false) {
     return false;
   }
-  auto local_model = glm::scale(transform, glm::vec3(radius));
-  base_technique_.Uniform(0, "local_model", local_model);
+
+  glm::mat4 TRS = glm::translate(glm::mat4(1), cuboid.center) *
+                  glm::toMat4(cuboid.quaternion) *
+                  glm::scale(glm::mat4(1), cuboid.half_size);
+  base_technique_.Uniform(0, "local_model", TRS);
 
   return true;
 }
 
 bool
-Floor::Init()
+Icon::Init(const char* icon_texture_path)
 {
+  icon_texture_ = TextureFactory::Create(system_, icon_texture_path);
+  if (icon_texture_ == nullptr || !icon_texture_->Init() ||
+      !icon_texture_->Load()) {
+    delete icon_texture_;
+    icon_texture_ = nullptr;
+
+    icon_texture_ = TextureFactory::Create(system_, kDefaultIconPath);
+    if (icon_texture_ == nullptr || !icon_texture_->Init() ||
+        !icon_texture_->Load())
+      return false;
+  }
+
   fd_ = zukou::Util::CreateAnonymousFile(pool_size());
   if (!pool_.Init(fd_, pool_size())) return false;
   if (!vertex_buffer_.Init(&pool_, 0, vertex_buffer_size())) return false;
@@ -74,14 +85,12 @@ Floor::Init()
   if (!gl_vertex_buffer_.Init()) return false;
   if (!gl_element_array_buffer_.Init()) return false;
   if (!vertex_array_.Init()) return false;
-  if (!vertex_shader_.Init(GL_VERTEX_SHADER, default_vert_shader_source))
+  if (!vertex_shader_.Init(GL_VERTEX_SHADER, icon_vert_shader_source))
     return false;
-  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, floor_frag_shader_source))
+  if (!fragment_shader_.Init(GL_FRAGMENT_SHADER, icon_frag_shader_source))
     return false;
   if (!program_.Init()) return false;
 
-  texture_ = TextureFactory::Create(system_, kFloorTexturePath);
-  if (!texture_->Init() || !texture_->Load()) return false;
   if (!sampler_.Init()) return false;
 
   if (!rendering_unit_.Init(virtual_object_)) return false;
@@ -117,10 +126,11 @@ Floor::Init()
   base_technique_.Bind(&vertex_array_);
   base_technique_.Bind(&program_);
 
-  texture_->GenerateMipmap(GL_TEXTURE_2D);
+  icon_texture_->GenerateMipmap(GL_TEXTURE_2D);
   sampler_.Parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   sampler_.Parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  base_technique_.Bind(0, "floor_texture", texture_, GL_TEXTURE_2D, &sampler_);
+  base_technique_.Bind(
+      0, "in_icon_texture", icon_texture_, GL_TEXTURE_2D, &sampler_);
 
   base_technique_.DrawElements(GL_TRIANGLES, elements_.size(),
       GL_UNSIGNED_SHORT, 0, &gl_element_array_buffer_);
@@ -131,52 +141,25 @@ Floor::Init()
 }
 
 void
-Floor::ConstructVertices(int resolution, int radial_resolution)
+Icon::ConstructVertices()
 {
-  vertices_.emplace_back(0, 0, 0, 0, 0);
-  for (float r = 1; r <= radial_resolution; r++) {
-    float this_radius = radius_ / radial_resolution * r;
-    for (float i = 0; i <= resolution; i++) {
-      float theta = M_PI * 2.f * i / float(resolution);
-      float x = this_radius * cosf(theta);
-      float y = 0;
-      float z = this_radius * sinf(theta);
-      vertices_.emplace_back(x, y, z, x * 2.f, z * 2.f);
+  float x = 0.5;
+  for (float y = -0.5; y <= 0.5; y += 1.0) {
+    for (float z = -0.5; z <= 0.5; z += 1.0) {
+      vertices_.emplace_back(x, y, z, z + 0.5, 0.5 - y);
     }
   }
 }
 
 void
-Floor::ConstructElements(int resolution, int radial_resolution)
+Icon::ConstructElements()
 {
-  ushort O = 0;
+  std::vector<ushort> values = {
+      0, 1, 2,  //
+      1, 2, 3,  //
+  };
 
-  // center circle
-  for (int32_t i = 1; i <= resolution; i++) {
-    ushort A = i;
-    ushort B = i + 1;
-    elements_.push_back(A);
-    elements_.push_back(B);
-    elements_.push_back(O);
-  }
-
-  // around
-  for (int32_t r = 0; r <= radial_resolution - 1; r++) {
-    for (int32_t i = 0; i <= resolution; i++) {
-      ushort A = 1 + r * (resolution + 1) + i;
-      ushort B = 1 + r * (resolution + 1) + i + 1;
-      ushort C = 1 + (r + 1) * (resolution + 1) + i;
-      ushort D = 1 + (r + 1) * (resolution + 1) + i + 1;
-
-      elements_.push_back(A);
-      elements_.push_back(B);
-      elements_.push_back(C);
-
-      elements_.push_back(B);
-      elements_.push_back(C);
-      elements_.push_back(D);
-    }
-  }
+  elements_.swap(values);
 }
 
 }  // namespace zennist

@@ -1,12 +1,15 @@
 #include "jpeg-texture.h"
 
+#include <bits/types/FILE.h>
+#include <jpeglib.h>
+#include <stdio.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
 namespace zennist {
 
-JpegTexture::JpegTexture(zukou::System *system)
-    : zukou::GlTexture(system), pool_(system)
+JpegTexture::JpegTexture(zukou::System *system, const char *texture_path)
+    : Texture(system), pool_(system), texture_path_(texture_path)
 {}
 
 JpegTexture::~JpegTexture()
@@ -17,13 +20,7 @@ JpegTexture::~JpegTexture()
 }
 
 bool
-JpegTexture::Init()
-{
-  return zukou::GlTexture::Init();
-}
-
-bool
-JpegTexture::Load(const char *texture_path)
+JpegTexture::Load()
 {
   FILE *fp;
   struct jpeg_decompress_struct cinfo;
@@ -39,9 +36,9 @@ JpegTexture::Load(const char *texture_path)
   }
   loaded_ = true;
 
-  fp = fopen(texture_path, "rb");
+  fp = fopen(texture_path_, "rb");
   if (fp == nullptr) {
-    fprintf(stderr, "JpegTexture::Load -- failed to open %s\n", texture_path);
+    fprintf(stderr, "JpegTexture::Load -- failed to open %s\n", texture_path_);
     goto err;
   }
 

@@ -1,14 +1,16 @@
 #include <zukou.h>
 
 #include <cstring>
-#include <iostream>
 #include <string>
 
+#include "config.h"
 #include "desk.h"
 #include "floor-edge.h"
 #include "floor.h"
 #include "jpeg-texture.h"
 #include "landscape.h"
+#include "launcher_icons.h"
+#include "log.h"
 #include "roof.h"
 #include "sphere.h"
 
@@ -31,12 +33,15 @@ RgbColor(float r, float g, float b)
   return glm::vec4(r / 255, g / 255, b / 255, 1);
 }
 
-class Application final : public zukou::IExpansiveDelegate
+class Application final : public zukou::IExpansiveDelegate,
+                          public zukou::ISystemDelegate
 {
  public:
   DISABLE_MOVE_AND_COPY(Application);
-  Application(Theme theme)
+  Application(Theme theme, Config* config)
       : theme_(theme),
+        config_(config),
+        system_(this),
         space_(&system_, this),
         landscape1_(&system_, &space_),
         landscape2_(&system_, &space_),
@@ -47,7 +52,8 @@ class Application final : public zukou::IExpansiveDelegate
         floorEdgeUnder_(&system_, &space_),
         bg_(&system_, &space_, 8),
         roof_(&system_, &space_),
-        desk_(&system_, &space_){};
+        desk_(&system_, &space_),
+        launcher_icons_(&system_, &space_){};
 
   std::string GetTexturePath(const char* name)
   {
@@ -106,7 +112,9 @@ class Application final : public zukou::IExpansiveDelegate
             4.5f, glm::translate(glm::mat4(1), glm::vec3(0, -.19f, 0))))
       return false;
     if (!roof_.Render(1.f,
-            glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
+            glm::translate(
+                glm::rotate(glm::mat4(1), (float)M_PI / 2, glm::vec3(0, 1, 0)),
+                glm::vec3(0, -0.5, 0)),
             roofModelPath))
       return false;
     if (!desk_.Render(1.f,
@@ -115,6 +123,7 @@ class Application final : public zukou::IExpansiveDelegate
                 glm::vec3(0, -0.2, 0)),
             deskModelPath))
       return false;
+    if (!launcher_icons_.Render(config_)) return false;
 
     space_.Commit();
 
@@ -125,8 +134,33 @@ class Application final : public zukou::IExpansiveDelegate
 
   void Shutdown() override { system_.Terminate(EXIT_SUCCESS); }
 
+  void RayEnter(uint32_t /*serial*/, zukou::VirtualObject* /*virtual_object*/,
+      glm::vec3 /*origin*/, glm::vec3 /*direction*/) override
+  {}
+
+  void RayLeave(
+      uint32_t /*serial*/, zukou::VirtualObject* /*virtual_object*/) override
+  {
+    launcher_icons_.RayLeave();
+  }
+
+  void RayMotion(
+      uint32_t /*time*/, glm::vec3 origin, glm::vec3 direction) override
+  {
+    launcher_icons_.RayMotion(origin, direction);
+  }
+
+  void RayButton(uint32_t /*serial*/, uint32_t /*time*/, uint32_t button,
+      bool pressed) override
+  {
+    launcher_icons_.RayButton(button, pressed);
+  }
+
+  void RayAxisFrame(const zukou::RayAxisEvent& /*event*/) override{};
+
  private:
   Theme theme_;
+  Config* config_;
 
   zukou::System system_;
   zukou::Expansive space_;
@@ -141,6 +175,7 @@ class Application final : public zukou::IExpansiveDelegate
   Sphere bg_;
   Roof roof_;
   Desk desk_;
+  LauncherIcons launcher_icons_;
 };
 
 }  // namespace zennist
@@ -148,6 +183,8 @@ class Application final : public zukou::IExpansiveDelegate
 int
 main(int argc, char* argv[])
 {
+  zennist::Config config;
+
   auto theme = zennist::Theme::Nami;
   if (argc >= 2) {
     if (std::strcmp(argv[1], "Oka")) {
@@ -157,7 +194,13 @@ main(int argc, char* argv[])
       theme = zennist::Theme::Kumo;
     }
   }
-  zennist::Application app(theme);
+
+  if (!config.Load()) {
+    ZennistError("Failed to load config.");
+    return EXIT_FAILURE;
+  }
+
+  zennist::Application app(theme, &config);
 
   if (!app.Init()) return EXIT_FAILURE;
 

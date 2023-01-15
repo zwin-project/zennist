@@ -22,7 +22,24 @@ jobs:
           sudo apt-get update &&
           sudo apt-get install \
             libwayland-dev wayland-protocols libglm-dev libgles-dev \
-            libjpeg-dev meson
+            libjpeg-dev librsvg2-dev \
+            meson
+
+      - name: Clone tomlc99
+        uses: actions/checkout@v2
+        with:
+          repository: cktan/tomlc99
+          path: tomlc99
+
+      - name: Rename "libtoml.pc.sample" to "libtoml.pc"
+        run: mv libtoml.pc.sample libtoml.pc
+        working-directory: ./tomlc99
+
+      - name: Build tomlc99
+        run: |
+          sudo mkdir -p /usr/local/lib/pkgconfig
+          sudo make install
+        working-directory: ./tomlc99
 
       - name: Clone zigen
         uses: actions/checkout@v2

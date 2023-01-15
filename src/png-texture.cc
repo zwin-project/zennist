@@ -1,16 +1,17 @@
 #include "png-texture.h"
 
+#include <png.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
-#include <iostream>
 
 #define SIGNATURE_NUM 8
 
 namespace zennist {
 
-PngTexture::PngTexture(zukou::System *system)
-    : zukou::GlTexture(system), pool_(system)
+PngTexture::PngTexture(zukou::System *system, const char *texture_path)
+    : Texture(system), pool_(system), texture_path_(texture_path)
 {}
 
 PngTexture::~PngTexture()
@@ -21,13 +22,7 @@ PngTexture::~PngTexture()
 }
 
 bool
-PngTexture::Init()
-{
-  return zukou::GlTexture::Init();
-}
-
-bool
-PngTexture::Load(const char *texture_path)
+PngTexture::Load()
 {
   FILE *fp = nullptr;
   uint32_t width, height;
@@ -35,8 +30,8 @@ PngTexture::Load(const char *texture_path)
   size_t size;
   uint32_t read_size;
 
-  unsigned char **rows = NULL;
-  unsigned char *data = NULL;
+  unsigned char **rows = nullptr;
+  unsigned char *data = nullptr;
   png_struct *png;
   png_info *info;
   png_byte type, depth, compression, interlace, filter;
@@ -49,9 +44,9 @@ PngTexture::Load(const char *texture_path)
     goto err;
   }
 
-  fp = fopen(texture_path, "rb");
+  fp = fopen(texture_path_, "rb");
   if (!fp) {
-    fprintf(stderr, "Fail to open file: %s\n", texture_path);
+    fprintf(stderr, "Fail to open file: %s\n", texture_path_);
     goto error_open_file;
   }
 
@@ -62,21 +57,23 @@ PngTexture::Load(const char *texture_path)
     goto error_not_png;
   }
 
-  png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (png == NULL) {
+  png =
+      png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+  if (png == nullptr) {
     fprintf(stderr, "Fail to crate png struct.\n");
     goto error_create_png_struct;
   }
 
   info = png_create_info_struct(png);
-  if (info == NULL) {
+  if (info == nullptr) {
     fprintf(stderr, "Fail to crate png image info.\n");
     goto error_create_info;
   }
 
   png_init_io(png, fp);
   png_set_sig_bytes(png, read_size);
-  png_read_png(png, info, PNG_TRANSFORM_PACKING | PNG_TRANSFORM_STRIP_16, NULL);
+  png_read_png(
+      png, info, PNG_TRANSFORM_PACKING | PNG_TRANSFORM_STRIP_16, nullptr);
 
   width = png_get_image_width(png, info);
   height = png_get_image_height(png, info);
@@ -150,7 +147,7 @@ PngTexture::Load(const char *texture_path)
 err:
 error_invalid_png_format:
 error_create_info:
-  png_destroy_read_struct(&png, &info, NULL);
+  png_destroy_read_struct(&png, &info, nullptr);
 
 error_create_png_struct:
 error_not_png:
