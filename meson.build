@@ -13,6 +13,7 @@ global_args = []
 global_args_maybe = [
   '-D_GNU_SOURCE',
   '-fvisibility=hidden',
+  '-Wno-gnu-zero-variadic-macro-arguments',
 ]
 
 foreach arg : global_args_maybe

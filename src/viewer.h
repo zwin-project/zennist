@@ -11,7 +11,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/vec3.hpp>
-#include <iostream>
 #include <unordered_map>
 #include <utility>
 #include <vector>

@@ -5,8 +5,8 @@
 
 #include <algorithm>
 #include <glm/gtx/quaternion.hpp>
-#include <iostream>
 
+#include "log.h"
 #include "viewer.h"
 
 namespace zennist {
@@ -26,7 +26,7 @@ LauncherIcons::Render(Config* config)
 
   zukou::Region region(system_);
   if (!region.Init()) {
-    std::cerr << "Failed to initialize region." << std::endl;
+    ZennistError("Failed to initialize region.");
     return false;
   }
 
@@ -77,7 +77,7 @@ LauncherIcons::Render(Config* config)
                      glm::rotate(glm::mat4(1), theta, glm::vec3(0, 1, 0));
         if (!viewer->Render(
                 ICON_REGION_HALF_SIZE - 0.005, transform, app.icon)) {
-          std::cerr << "Failed to render gltf icon: " << app.icon << std::endl;
+          ZennistError("Failed to render gltf icon: %s", app.icon);
         }
       } else {
         Icon* icon = new Icon(system_, expansive_);
@@ -155,12 +155,11 @@ LauncherIcons::Launch(FavoriteApp* app)
 
   pid = fork();
   if (pid == -1) {
-    std::cerr << "Failed to fork the command process: " << strerror(errno)
-              << std::endl;
+    ZennistError("Failed to fork the command process: %s", strerror(errno));
   } else if (pid == 0) {
     execl("/bin/sh", "/bin/sh", "-c", app->exec, NULL);
-    std::cerr << "Failed to execute the command (" << app->exec
-              << "): " << strerror(errno) << std::endl;
+    ZennistError(
+        "Failed to execute the command (%s): %s", app->exec, strerror(errno));
   }
 }
 

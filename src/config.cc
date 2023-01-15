@@ -4,7 +4,7 @@
 #include <toml.h>
 #include <unistd.h>
 
-#include <iostream>
+#include "log.h"
 
 namespace zennist {
 
@@ -21,7 +21,7 @@ Config::Load()
 {
   struct toml_table_t *config_table = GetTomlTable();
   if (config_table == nullptr) {
-    std::cerr << "Config is empty, use the default values." << std::endl;
+    ZennistWarn("Config is empty, use the default values.");
     return true;
   }
 
@@ -41,8 +41,7 @@ Config::Load()
       if (exec.ok && strlen(exec.u.s) != 0) {
         table_.favorite_apps[i].exec = exec.u.s;
       } else {
-        std::cerr << "Required config key not specified: favorite_apps:exec"
-                  << std::endl;
+        ZennistError("Required config key not specified: favorite_apps:exec");
         return false;
       }
 
@@ -52,8 +51,7 @@ Config::Load()
       } else {
         char empty_icon[] = "";
         table_.favorite_apps[i].icon = empty_icon;
-        std::cerr << "Required config key not specified: favorite_apps:icon"
-                  << std::endl;
+        ZennistWarn("Required config key not specified: favorite_apps:icon");
       }
 
       toml_datum_t disable_2d = toml_bool_in(favorite_app, "disable_2d");
@@ -80,13 +78,13 @@ Config::GetTomlTable()
 {
   std::string config_filepath = GetConfigFilePath();
   if (config_filepath.compare("") == 0) {
-    std::cerr << "Could not find the home directory" << std::endl;
+    ZennistWarn("Could not find the home directory");
     return nullptr;
   }
 
   FILE *fp = fopen(config_filepath.c_str(), "r");
   if (fp == nullptr) {
-    std::cerr << "Failed to open" << config_filepath << std::endl;
+    ZennistWarn("Failed to open %s", config_filepath.c_str());
     return nullptr;
   }
 
@@ -94,8 +92,7 @@ Config::GetTomlTable()
   toml_table_t *tbl = toml_parse_file(fp, errbuf, sizeof(errbuf));
   fclose(fp);
 
-  if (tbl == nullptr)
-    std::cerr << "Failed to parse config.toml: " << errbuf << std::endl;
+  if (tbl == nullptr) ZennistWarn("Failed to parse config.toml: %s", errbuf);
 
   return tbl;
 }

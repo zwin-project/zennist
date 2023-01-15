@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include <cstring>
-#include <iostream>
 
 #include "default.vert.h"
 #include "floor.frag.h"

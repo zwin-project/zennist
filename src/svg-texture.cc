@@ -8,7 +8,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include <iostream>
+#include "log.h"
 
 #define SIGNATURE_NUM 8
 
@@ -37,13 +37,13 @@ SvgTexture::Load()
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 
   if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-    std::cerr << "Failed to create cairo_surface" << std::endl;
+    ZennistError("Failed to create cairo_surface.");
     return false;
   }
 
   cairo_t *cr = cairo_create(surface);
   if (cairo_status(cr) != CAIRO_STATUS_SUCCESS) {
-    std::cerr << "Failed to create cairo_t" << std::endl;
+    ZennistError("Failed to create cairo_t.");
     return false;
   }
 
@@ -55,8 +55,7 @@ SvgTexture::Load()
   RsvgHandle *handle = rsvg_handle_new_from_gfile_sync(
       file, RSVG_HANDLE_FLAGS_NONE, NULL, &error);
   if (handle == NULL) {
-    std::cerr << "Failed to create the svg handler: " << error->message
-              << std::endl;
+    ZennistError("Failed to create the svg handler: %s", error->message);
     g_error_free(error);
     return false;
   }
@@ -71,7 +70,7 @@ SvgTexture::Load()
   };
 
   if (!rsvg_handle_render_document(handle, cr, &viewport, &error)) {
-    std::cerr << "Failed to render the svg: " << error->message << std::endl;
+    ZennistError("Failed to render the svg: %s", error->message);
     g_error_free(error);
     return false;
   }
@@ -107,8 +106,6 @@ SvgTexture::Load()
       GL_UNSIGNED_BYTE, &texture_buffer_);
 
   loaded_ = true;
-
-  // TODO: destory resources
 
   return true;
 }

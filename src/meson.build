@@ -15,6 +15,7 @@ _sources = [
   'texture-factory.cc',
   'viewer.cc',
   'config.cc',
+  'log.cc',
   'main.cc',
 
   shaders['landscape']['vert'],

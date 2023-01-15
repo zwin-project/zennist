@@ -6,6 +6,7 @@
 #include "gltf.vert.h"
 #include "gltf_color.frag.h"
 #include "gltf_texture.frag.h"
+#include "log.h"
 #include "texture-factory.h"
 
 namespace zennist {
@@ -39,14 +40,14 @@ Viewer::Load(const char *model_path)
   bool ret = false;
   ret = loader.LoadASCIIFromFile(model_, &err, &warn, path.c_str());
 
-  if (!warn.empty()) std::cerr << warn << std::endl;
+  if (!warn.empty()) ZennistWarn("%s", warn.c_str());
   if (!err.empty()) {
-    std::cerr << err << std::endl;
+    ZennistError("%s", err.c_str());
     return false;
   }
 
   if (!ret) {
-    std::cerr << "Failed to load .glTF : " << path << std::endl;
+    ZennistError("Failed to load .glTF: %s", path.c_str());
     return false;
   }
 
@@ -61,17 +62,17 @@ Viewer::Render(float radius, glm::mat4 transform, const char *model_path)
   this->SetInitialPosition(radius, transform);
 
   if (!this->Load(model_path)) {
-    std::cerr << "Failed to load model: " << model_path << std::endl;
+    ZennistError("Failed to load model: %s", model_path);
     return false;
   }
 
   if (!this->Setup()) {
-    std::cerr << "Failed to setup buffer" << std::endl;
+    ZennistError("Failed to setup buffer: %s", model_path);
     return false;
   }
 
   if (!this->RenderScene()) {
-    std::cerr << "Failed to render scene" << std::endl;
+    ZennistError("Failed to render scene: %s", model_path);
     return false;
   }
 
@@ -82,11 +83,11 @@ bool
 Viewer::Setup()
 {
   if (model_->buffers.size() == 0) {
-    std::cerr << "buffer size is zero." << std::endl;
+    ZennistWarn("Buffer size is zero.");
     return false;
   }
   if (model_->buffers.size() > 1) {
-    std::cerr << "TODO: support buffer size is more than one." << std::endl;
+    ZennistWarn("Unsupported buffer size: %ld", model_->buffers.size());
     return false;
   }
 
@@ -136,7 +137,7 @@ Viewer::Setup()
   for (int i = 0; i < (int)model_->bufferViews.size(); ++i) {
     const tinygltf::BufferView &bufferView = model_->bufferViews[i];
     if (bufferView.target == 0) {
-      std::cout << "TODO: bufferView.target is zero (unsupported)" << std::endl;
+      ZennistWarn("Unsupported bufferView.target: %d", bufferView.target);
       continue;
     }
 
@@ -145,7 +146,6 @@ Viewer::Setup()
       const auto &accessor = model_->accessors[a_i];
       if (accessor.bufferView == i) {
         if (accessor.sparse.isSparse) {
-          std::cout << "TODO: support sparse_accessor" << std::endl;
           sparse_accessor = a_i;
           break;
         }
@@ -153,20 +153,20 @@ Viewer::Setup()
     }
 
     if (sparse_accessor >= 0) {
-      std::cout << "TODO: support sparse_accessor" << std::endl;
+      ZennistWarn("Sparse accessor is not supported.");
       continue;
     }
 
     zukou::Buffer *zBuffer = new zukou::Buffer();
     if (!zBuffer->Init(&pool_, bufferView.byteOffset, bufferView.byteLength)) {
-      std::cerr << "Failed to initialize vertex buffer" << std::endl;
+      ZennistError("Failed to initialize buffer.");
       return false;
     }
 
     zukou::GlBuffer *zGlBuffer = new zukou::GlBuffer(system_);
     gl_vertex_buffer_map_[i] = zGlBuffer;
     if (!gl_vertex_buffer_map_[i]->Init()) {
-      std::cerr << "Failed to initialize gl vertex buffer" << std::endl;
+      ZennistError("Failed to initialize gl-vertex-buffer.");
       return false;
     }
     gl_vertex_buffer_map_[i]->Data(bufferView.target, zBuffer, GL_STATIC_DRAW);
@@ -180,16 +180,9 @@ Viewer::Setup()
     path /= image.uri;
 
     Texture *texture_instance = TextureFactory::Create(system_, path.c_str());
-    if (texture_instance == nullptr) {
-      std::cerr << "Failed to create texture: " << path << std::endl;
-      return false;
-    }
-    if (!texture_instance->Init()) {
-      std::cerr << "Failed to initialize texture: " << path << std::endl;
-      return false;
-    }
-    if (!texture_instance->Load()) {
-      std::cerr << "Failed to load texture: " << path << std::endl;
+    if (texture_instance == nullptr || !texture_instance->Init() ||
+        !texture_instance->Load()) {
+      ZennistError("Failed to create texture: %s", path.c_str());
       return false;
     }
     texture_map_.emplace(texture.source, texture_instance);
@@ -216,7 +209,6 @@ bool
 Viewer::RenderNode(const tinygltf::Node &node)
 {
   if (node.matrix.size() == 16) {
-    // TODO: row major or column major
     matrix_stack_.push_back(glm::make_mat4(node.matrix.data()));
   } else {
     glm::mat4 mat(1);
@@ -267,30 +259,29 @@ Viewer::RenderMesh(const tinygltf::Mesh &mesh)
         new zukou::GlBaseTechnique(system_);
 
     if (!rendering_unit->Init(virtual_object_)) {
-      std::cerr << "Failed to initialize rendering_unit" << std::endl;
+      ZennistError("Failed to initialize rendering_unit.");
       return false;
     }
 
     if (!base_technique->Init(rendering_unit)) {
-      std::cerr << "Failed to initialize base_technique" << std::endl;
+      ZennistError("Failed to initialize base_technique.");
       return false;
     }
 
     zukou::GlVertexArray *vertex_array = new zukou::GlVertexArray(system_);
     if (!vertex_array->Init()) {
-      std::cerr << "Failed to initialize vertex_array" << std::endl;
+      ZennistError("Failed to initialize vertex_array");
       return false;
     }
 
     const tinygltf::Primitive &primitive = mesh.primitives[i];
 
     assert((int)model_->materials.size() > primitive.material);
-    if (primitive.material < 0) continue;  // FIXME:
+    if (primitive.material < 0) continue;
 
     tinygltf::Material material = model_->materials[primitive.material];
 
     int texture_index = material.pbrMetallicRoughness.baseColorTexture.index;
-    // TODO: sampler setting
     if (texture_index >= 0) {
       tinygltf::Texture texture = model_->textures[texture_index];
       auto gl_texture = texture_map_[texture.source];
@@ -362,12 +353,10 @@ Viewer::RenderMesh(const tinygltf::Mesh &mesh)
 
       if ((attribute != "POSITION") && (attribute != "NORMAL") &&
           (attribute != "TEXCOORD_0")) {
-        std::cerr << "TODO: support attribute name is " << attribute
-                  << std::endl;
+        ZennistWarn("Unsupported attribute: %s", attribute.c_str());
         continue;
       }
 
-      // TODO: more robust
       int location;
       if (attribute == "POSITION")
         location = 0;
@@ -378,7 +367,6 @@ Viewer::RenderMesh(const tinygltf::Mesh &mesh)
       else
         assert(0);
 
-      // compute byteStride from accessor + bufferView.
       int byteStride =
           accessor.ByteStride(model_->bufferViews[accessor.bufferView]);
       assert(byteStride != -1);
@@ -421,8 +409,7 @@ Viewer::RenderMesh(const tinygltf::Mesh &mesh)
 
     if (model_->bufferViews[indexAccessor.bufferView].target !=
         GL_ELEMENT_ARRAY_BUFFER) {
-      std::cerr << "TODO: support other than gl_element_array_buffer"
-                << std::endl;
+      ZennistWarn("Unsupport other than gl_element_array_buffer");
     }
 
     base_technique->Uniform(0, "local_model", CalculateLocalModel());

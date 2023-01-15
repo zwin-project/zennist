@@ -1,7 +1,6 @@
 #include <zukou.h>
 
 #include <cstring>
-#include <iostream>
 #include <string>
 
 #include "config.h"
@@ -11,6 +10,7 @@
 #include "jpeg-texture.h"
 #include "landscape.h"
 #include "launcher_icons.h"
+#include "log.h"
 #include "roof.h"
 #include "sphere.h"
 
@@ -196,7 +196,7 @@ main(int argc, char* argv[])
   }
 
   if (!config.Load()) {
-    std::cerr << "Failed to load config." << std::endl;
+    ZennistError("Failed to load config.");
     return EXIT_FAILURE;
   }
 

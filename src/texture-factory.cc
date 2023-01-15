@@ -1,7 +1,6 @@
 #include "texture-factory.h"
 
 #include <algorithm>
-#include <iostream>
 
 #include "jpeg-texture.h"
 #include "png-texture.h"

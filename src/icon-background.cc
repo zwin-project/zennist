@@ -5,7 +5,6 @@
 
 #include <cstring>
 #include <glm/gtx/quaternion.hpp>
-#include <iostream>
 
 #include "icon.frag.h"
 #include "icon.vert.h"
