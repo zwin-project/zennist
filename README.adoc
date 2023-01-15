@@ -2,15 +2,11 @@
 
 == Build & Install
 
-TBD
-
-=== Dependencies
-
-. tomlc99 +
-Please see https://github.com/cktan/tomlc99[cktan/tomlc99] to build and install. +
-Note that `make install` tries to install `libtoml.pc` to `/usr/local/lib/pkgconfig`.
-You need to rename `libtoml.pc.sample` in the tomlc99 project root to `libtoml.pc`
-and manually create `/usr/local/lib/pkgconfig` before running `make install`.
+[source, shell]
+----
+$ meson build
+$ ninja -C build install
+----
 
 == Asset License
 

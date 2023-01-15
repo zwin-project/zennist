@@ -25,31 +25,14 @@ jobs:
             libjpeg-dev librsvg2-dev \
             meson
 
-      - name: Clone tomlc99
+      - name: Clone zwin
         uses: actions/checkout@v2
         with:
-          repository: cktan/tomlc99
-          path: tomlc99
-
-      - name: Rename "libtoml.pc.sample" to "libtoml.pc"
-        run: mv libtoml.pc.sample libtoml.pc
-        working-directory: ./tomlc99
-
-      - name: Build tomlc99
-        run: |
-          sudo mkdir -p /usr/local/lib/pkgconfig
-          sudo make install
-        working-directory: ./tomlc99
-
-      - name: Clone zigen
-        uses: actions/checkout@v2
-        with:
-          repository: zigen-project/zigen
-          path: zigen
-          ref: draft
+          repository: zwin-project/zwin
+          path: zwin
       
-      - name: Build zigen
-        working-directory: ./zigen
+      - name: Build zwin
+        working-directory: ./zwin
         run: |
           meson build
           sudo ninja -C build install
@@ -57,7 +40,7 @@ jobs:
       - name: Checkout zukou
         uses: actions/checkout@v2
         with:
-          repository: zigen-project/zukou
+          repository: zwin-project/zukou
           path: zukou
 
       - name: Build zukou
