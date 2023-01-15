@@ -35,6 +35,9 @@ Config::Load()
       toml_datum_t name = toml_string_in(favorite_app, "name");
       if (name.ok) {
         table_.favorite_apps[i].name = name.u.s;
+      } else {
+        char empty_name[] = "";
+        table_.favorite_apps[i].name = empty_name;
       }
 
       toml_datum_t exec = toml_string_in(favorite_app, "exec");
