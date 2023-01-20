@@ -202,28 +202,29 @@ Parse(int argc, char* argv[], zennist::Theme* theme)
 
   options.add_options()         //
       ("h,help", "Print help")  //
-      ("t,theme", "Set theme", cxxopts::value<std::string>());
+      ("t,theme", "Set theme: Nami(default), Oka, Kumo",
+          cxxopts::value<std::string>());
 
   cxxopts::ParseResult result;
   try {
     result = options.parse(argc, argv);
   } catch (const cxxopts::exceptions::exception& e) {
-    std::cout << "error parsing options: " << e.what() << std::endl;
-    std::cout << std::endl;
+    std::cerr << "error parsing options: " << e.what() << std::endl;
+    std::cerr << std::endl;
 
-    std::cout << options.help() << std::endl;
+    std::cerr << options.help() << std::endl;
     return false;
   }
 
   if (result.unmatched().size() > 0) {
-    std::cout << "Unmatched options: ";
+    std::cerr << "Unmatched options: ";
     for (const auto& option : result.unmatched()) {
-      std::cout << "'" << option << "' ";
+      std::cerr << "'" << option << "' ";
     }
-    std::cout << std::endl;
-    std::cout << std::endl;
+    std::cerr << std::endl;
+    std::cerr << std::endl;
 
-    std::cout << options.help() << std::endl;
+    std::cerr << options.help() << std::endl;
     return false;
   }
 
@@ -241,6 +242,15 @@ Parse(int argc, char* argv[], zennist::Theme* theme)
       *theme = zennist::Theme::Oka;
     else if (std::strcmp(lower_theme_name.c_str(), "kumo") == 0)
       *theme = zennist::Theme::Kumo;
+    else if (std::strcmp(lower_theme_name.c_str(), "nami") == 0)
+      *theme = zennist::Theme::Nami;
+    else {
+      std::cerr << "Unknown theme is specified.: " << theme_name << std::endl;
+      std::cerr << std::endl;
+
+      std::cerr << options.help() << std::endl;
+      return false;
+    }
   }
 
   return true;
