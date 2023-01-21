@@ -1,6 +1,9 @@
 #include <zukou.h>
 
+#include <algorithm>
 #include <cstring>
+#include <cxxopts.hpp>
+#include <iostream>
 #include <string>
 
 #include "config.h"
@@ -22,8 +25,8 @@ constexpr char deskModelPath[] = ZENNIST_ASSET_DIR "/desk/desk.gltf";
 namespace zennist {
 
 enum class Theme {
-  Oka,   // hills
   Nami,  // waves
+  Oka,   // hills
   Kumo   // clouds
 };
 
@@ -59,17 +62,17 @@ class Application final : public zukou::IExpansiveDelegate,
   {
     std::string str = ZENNIST_ASSET_DIR;
     switch (theme_) {
-      case Theme::Oka:
-        str += "/green_";
-        break;
       case Theme::Nami:
         str += "/blue_";
+        break;
+      case Theme::Oka:
+        str += "/green_";
         break;
       case Theme::Kumo:
         str += "/white_";
         break;
       default:
-        str += "/green_";
+        str += "/blue_";
         break;
     }
     str += name;
@@ -180,20 +183,86 @@ class Application final : public zukou::IExpansiveDelegate,
 
 }  // namespace zennist
 
+std::string
+Lower(std::string& target)
+{
+  std::string lower_name = target;
+  std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(),
+      [](unsigned char c) { return std::tolower(c); });
+
+  return lower_name;
+}
+
+bool
+Parse(int argc, char* argv[], zennist::Theme* theme)
+{
+  std::unique_ptr<cxxopts::Options> allocated(
+      new cxxopts::Options(argv[0], " - a zen's default desk Expansive"));
+  auto& options = *allocated;
+
+  options.add_options()         //
+      ("h,help", "Print help")  //
+      ("t,theme", "Set theme: Nami(default), Oka, Kumo",
+          cxxopts::value<std::string>());
+
+  cxxopts::ParseResult result;
+  try {
+    result = options.parse(argc, argv);
+  } catch (const cxxopts::exceptions::exception& e) {
+    std::cerr << "error parsing options: " << e.what() << std::endl;
+    std::cerr << std::endl;
+
+    std::cerr << options.help() << std::endl;
+    return false;
+  }
+
+  if (result.unmatched().size() > 0) {
+    std::cerr << "Unmatched options: ";
+    for (const auto& option : result.unmatched()) {
+      std::cerr << "'" << option << "' ";
+    }
+    std::cerr << std::endl;
+    std::cerr << std::endl;
+
+    std::cerr << options.help() << std::endl;
+    return false;
+  }
+
+  if (result.count("help")) {
+    std::cout << options.help() << std::endl;
+    return false;
+  }
+
+  *theme = zennist::Theme::Nami;
+  if (result.count("t")) {
+    auto theme_name = result["t"].as<std::string>();
+    auto lower_theme_name = Lower(theme_name);
+
+    if (std::strcmp(lower_theme_name.c_str(), "oka") == 0)
+      *theme = zennist::Theme::Oka;
+    else if (std::strcmp(lower_theme_name.c_str(), "kumo") == 0)
+      *theme = zennist::Theme::Kumo;
+    else if (std::strcmp(lower_theme_name.c_str(), "nami") == 0)
+      *theme = zennist::Theme::Nami;
+    else {
+      std::cerr << "Unknown theme is specified.: " << theme_name << std::endl;
+      std::cerr << std::endl;
+
+      std::cerr << options.help() << std::endl;
+      return false;
+    }
+  }
+
+  return true;
+}
+
 int
 main(int argc, char* argv[])
 {
   zennist::Config config;
+  zennist::Theme theme;
 
-  auto theme = zennist::Theme::Nami;
-  if (argc >= 2) {
-    if (std::strcmp(argv[1], "Oka")) {
-      theme = zennist::Theme::Oka;
-    }
-    if (std::strcmp(argv[1], "Kumo")) {
-      theme = zennist::Theme::Kumo;
-    }
-  }
+  if (!Parse(argc, argv, &theme)) return EXIT_FAILURE;
 
   if (!config.Load()) {
     ZennistError("Failed to load config.");
