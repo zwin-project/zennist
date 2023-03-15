@@ -1,0 +1,4 @@
+option('wallpapers',
+  description: 'Install the zennist wallpapers',
+  type: 'boolean',
+  value: 'true')

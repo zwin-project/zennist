@@ -1,0 +1,6 @@
+.vscode/
+.cache/
+build/
+
+subprojects/*
+!subprojects/tomlplusplus.wrap

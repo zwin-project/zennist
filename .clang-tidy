@@ -1,0 +1,12 @@
+Checks: "
+  -*,
+
+  google-*,
+
+  modernize-use-nullptr,
+
+  readability-braces-around-statements,
+  readability-named-parameter,
+"
+WarningsAsErrors: '*'
+FormatStyle: file

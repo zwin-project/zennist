@@ -1,0 +1,41 @@
+name: meson_test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-with-clang:
+    runs-on: ubuntu-22.04
+
+    env:
+      CC: clang
+      CXX: clang++
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update &&
+          sudo apt-get install \
+            libwayland-dev wayland-protocols meson
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: main
+
+      - name: Build & Test
+        run: |
+          meson build
+          ninja -C build all clang-tidy clang-format-check
+        working-directory: ./main
+
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: zennist-test-log
+          path: main/build/meson-logs/

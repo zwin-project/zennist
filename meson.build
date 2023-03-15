@@ -1,0 +1,84 @@
+project(
+  'zennist', 'c', 'cpp',
+  version: '0.1.2-dev',
+  license: 'MIT',
+  meson_version: '>= 0.58.0',
+  default_options: ['warning_level=3', 'werror=true', 'optimization=2', 'c_std=gnu11', 'cpp_std=gnu++17'],
+)
+
+################################
+##        global args         ##
+################################
+
+cc = meson.get_compiler('c')
+cdata = configuration_data()
+
+global_args = []
+global_args_maybe = [
+  '-D_GNU_SOURCE',
+  '-DTOML_EXCEPTIONS=0',
+  '-DTOML_HEADER_ONLY=1',
+  '-fvisibility=hidden',
+  '-Wno-gnu-zero-variadic-macro-arguments',
+]
+
+foreach arg : global_args_maybe
+  if cc.has_argument(arg)
+    global_args += arg
+  endif
+endforeach
+add_project_arguments(global_args, language: 'cpp')
+
+
+################################
+##        dependencies        ##
+################################
+
+tomlplusplus_proj = subproject(
+  'tomlplusplus',
+  default_options: [
+    'compile_library=false',
+  ]
+)
+
+gtkmm_dep = dependency('gtkmm-3.0')
+gtk_layer_shell_dep = dependency('gtk-layer-shell-0')
+tomlplusplus_dep = tomlplusplus_proj.get_variable('tomlplusplus_dep')
+
+
+################################
+##            data            ##
+################################
+
+datadir = get_option('datadir')
+project_name = meson.project_name()
+
+subdir('assets/wallpapers')
+
+install_subdir(
+  'assets',
+  install_dir: datadir / project_name,
+  exclude_directories: [ 'wallpapers' ],
+)
+
+cdata.set_quoted(
+  'ZENNIST_ASSET_DIR',
+  get_option('prefix') / datadir / project_name / 'assets'
+)
+
+configure_file(
+  output: 'constants.h',
+  configuration: cdata,
+)
+
+
+################################
+##           build            ##
+################################
+
+textify = files('tools/textify.sh')[0]
+zennist_inc = include_directories('zennist')
+
+subdir('zrr')
+subdir('shaders')
+subdir('zennist')

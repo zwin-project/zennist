@@ -1,0 +1,9 @@
+= ZENNIST
+
+== Build & Install
+
+[source, shell]
+----
+$ meson build
+$ ninja -C build install
+----
