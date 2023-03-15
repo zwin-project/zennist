@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - v0.2.0-dev
   pull_request:
     branches:
       - main
+      - v0.2.0-dev
 
 jobs:
   test-with-clang:
@@ -21,7 +23,8 @@ jobs:
         run: |
           sudo apt-get update &&
           sudo apt-get install \
-            libwayland-dev wayland-protocols meson
+            libwayland-dev wayland-protocols libgtkmm-3.0-dev \
+            libgtk-layer-shell-dev meson
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -31,7 +34,8 @@ jobs:
       - name: Build & Test
         run: |
           meson build
-          ninja -C build all clang-tidy clang-format-check
+          ninja -C build
+          ninja -C build clang-tidy clang-format-check
         working-directory: ./main
 
       - uses: actions/upload-artifact@v3
