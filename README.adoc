@@ -7,3 +7,15 @@
 $ meson build
 $ ninja -C build install
 ----
+
+== Config
+
+[source, toml]
+.~/.config/zen-desktop/config.toml
+----
+
+[zennist]
+
+wallpaper="/usr/local/share/backgrounds/zennist/Zennist_Wallpaper_Main_3840x2160.png"
+
+----
