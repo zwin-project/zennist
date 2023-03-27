@@ -64,7 +64,7 @@ std::string
 Error::to_string()
 {
   std::string description = reason_;
-  if (cause_) {
+  if (cause_ && *cause_) {
     description += "\n";
     description += "\tCaused by: " + cause_->to_string();
   }

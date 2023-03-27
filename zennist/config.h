@@ -11,7 +11,7 @@ class Config final
 
   static zrr::Error AutoLoad();
 
-  static const Config &get();
+  static const Config &Get();
 
   inline const std::string &wallpaper() const;
 

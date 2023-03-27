@@ -44,7 +44,7 @@ Config::AutoLoad()
 }
 
 const Config &
-Config::get()
+Config::Get()
 {
   return singleton_;
 }
