@@ -34,7 +34,7 @@ zukou_dep = dependency('zukou', version: zukou_req)
 cairo_dep = dependency('cairo')
 jpeg_dep = dependency('libjpeg')
 png_dep = dependency('libpng')
-rsvg_dep = dependency('librsvg-2.0')
+rsvg_dep = dependency('librsvg-2.0', include_type: 'system')
 
 textify = files('tools/textify.sh')[0]
 
