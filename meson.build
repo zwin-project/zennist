@@ -12,7 +12,9 @@ cdata = configuration_data()
 global_args = []
 global_args_maybe = [
   '-D_GNU_SOURCE',
+  '-DGLM_ENABLE_EXPERIMENTAL',
   '-fvisibility=hidden',
+  '-Wno-expansion-to-defined',
   '-Wno-gnu-zero-variadic-macro-arguments',
 ]
 
