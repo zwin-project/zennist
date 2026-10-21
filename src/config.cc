@@ -1,7 +1,7 @@
 #include "config.h"
 
 #include <pwd.h>
-#include <toml.h>
+#include <tomlc17.h>
 #include <unistd.h>
 
 #include "log.h"
@@ -19,85 +19,93 @@ Config::GetFavoriteApps()
 bool
 Config::Load()
 {
-  struct toml_table_t *config_table = GetTomlTable();
-  if (config_table == nullptr) {
+  toml_result_t config_result = GetTomlResult();
+  if (!config_result.ok) {
     ZennistWarn("Config is empty, use the default values.");
+    toml_free(config_result);
     return true;
   }
 
-  toml_array_t *favorite_apps = toml_array_in(config_table, "favorite_apps");
-  if (favorite_apps != nullptr) {
-    table_.favorite_apps.resize(toml_array_nelem(favorite_apps));
+  // Strings in toml_datum_t are owned by toml_result_t
+  toml_datum_t favorite_apps = toml_get(config_result.toptab, "favorite_apps");
+  if (favorite_apps.type == TOML_ARRAY) {
+    table_.favorite_apps.resize(favorite_apps.u.arr.size);
     for (size_t i = 0; i < table_.favorite_apps.size(); i++) {
       table_.favorite_apps[i] = {};
-      auto favorite_app = toml_table_at(favorite_apps, i);
-
-      toml_datum_t name = toml_string_in(favorite_app, "name");
-      if (name.ok) {
-        table_.favorite_apps[i].name = name.u.s;
-      } else {
-        char empty_name[] = "";
-        table_.favorite_apps[i].name = empty_name;
-      }
-
-      toml_datum_t exec = toml_string_in(favorite_app, "exec");
-      if (exec.ok && strlen(exec.u.s) != 0) {
-        table_.favorite_apps[i].exec = exec.u.s;
-      } else {
-        ZennistError("Required config key not specified: favorite_apps:exec");
+      toml_datum_t favorite_app = favorite_apps.u.arr.elem[i];
+      if (favorite_app.type != TOML_TABLE) {
+        ZennistError("Each 'favorite_apps' entry must be a table");
+        toml_free(config_result);
         return false;
       }
 
-      toml_datum_t icon = toml_string_in(favorite_app, "icon");
-      if (icon.ok && strlen(icon.u.s) != 0) {
-        table_.favorite_apps[i].icon = icon.u.s;
+      toml_datum_t name = toml_get(favorite_app, "name");
+      if (name.type == TOML_STRING) {
+        table_.favorite_apps[i].name = strdup(name.u.s);
       } else {
-        char empty_icon[] = "";
-        table_.favorite_apps[i].icon = empty_icon;
+        table_.favorite_apps[i].name = strdup("");
+      }
+
+      toml_datum_t exec = toml_get(favorite_app, "exec");
+      if (exec.type == TOML_STRING && strlen(exec.u.s) != 0) {
+        table_.favorite_apps[i].exec = strdup(exec.u.s);
+      } else {
+        ZennistError("Required config key not specified: favorite_apps:exec");
+        toml_free(config_result);
+        return false;
+      }
+
+      toml_datum_t icon = toml_get(favorite_app, "icon");
+      if (icon.type == TOML_STRING && strlen(icon.u.s) != 0) {
+        table_.favorite_apps[i].icon = strdup(icon.u.s);
+      } else {
+        table_.favorite_apps[i].icon = strdup("");
         ZennistWarn("Required config key not specified: favorite_apps:icon");
       }
 
-      toml_datum_t disable_2d = toml_bool_in(favorite_app, "disable_2d");
-      if (disable_2d.ok) {
-        table_.favorite_apps[i].disable_2d = disable_2d.u.b;
+      toml_datum_t disable_2d = toml_get(favorite_app, "disable_2d");
+      if (disable_2d.type == TOML_BOOLEAN) {
+        table_.favorite_apps[i].disable_2d = disable_2d.u.boolean;
       } else {
         table_.favorite_apps[i].disable_2d = false;
       }
 
-      toml_datum_t disable_3d = toml_bool_in(favorite_app, "disable_3d");
-      if (disable_3d.ok) {
-        table_.favorite_apps[i].disable_3d = disable_3d.u.b;
+      toml_datum_t disable_3d = toml_get(favorite_app, "disable_3d");
+      if (disable_3d.type == TOML_BOOLEAN) {
+        table_.favorite_apps[i].disable_3d = disable_3d.u.boolean;
       } else {
         table_.favorite_apps[i].disable_3d = false;
       }
     }
   };
 
+  toml_free(config_result);
   return true;
 }
 
-struct toml_table_t *
-Config::GetTomlTable()
+toml_result_t
+Config::GetTomlResult()
 {
+  toml_result_t result = {};
+
   std::string config_filepath = GetConfigFilePath();
   if (config_filepath.compare("") == 0) {
     ZennistWarn("Could not find the home directory");
-    return nullptr;
+    return result;
   }
 
   FILE *fp = fopen(config_filepath.c_str(), "r");
   if (fp == nullptr) {
     ZennistWarn("Failed to open %s", config_filepath.c_str());
-    return nullptr;
+    return result;
   }
 
-  char errbuf[200];
-  toml_table_t *tbl = toml_parse_file(fp, errbuf, sizeof(errbuf));
+  result = toml_parse_file(fp);
   fclose(fp);
 
-  if (tbl == nullptr) ZennistWarn("Failed to parse config.toml: %s", errbuf);
+  if (!result.ok) ZennistWarn("Failed to parse config.toml: %s", result.errmsg);
 
-  return tbl;
+  return result;
 }
 
 std::string

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string.h>
-#include <toml.h>
+#include <tomlc17.h>
 #include <zukou.h>
 
 #include <vector>
@@ -28,7 +28,7 @@ class Config
   bool Load();
 
  private:
-  struct toml_table_t *GetTomlTable();
+  toml_result_t GetTomlResult();
   std::string GetConfigFilePath();
 
   struct {
